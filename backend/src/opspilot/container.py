@@ -7,11 +7,15 @@ from dataclasses import dataclass
 from anthropic import AsyncAnthropic
 from redis.asyncio import Redis
 
+from opspilot.approvals.service import ApprovalService
 from opspilot.auth.tokens import TokenService
 from opspilot.config import Settings
 from opspilot.db.base import Database
 from opspilot.db.models import EMBEDDING_DIM
 from opspilot.ingestion.service import IngestionService
+from opspilot.integrations.control_plane import ControlPlaneClient
+from opspilot.mcp_client.gateway import McpGateway, ServerName
+from opspilot.mcpservers.tokens import ToolTokenIssuer
 from opspilot.queue.base import JobQueue
 from opspilot.queue.redis_streams import RedisStreamQueue
 from opspilot.queue.sqs import SqsQueue
@@ -38,6 +42,9 @@ class Container:
     ingestion: IngestionService
     tokens: TokenService
     chunker: Chunker
+    approvals: ApprovalService
+    mcp: McpGateway | None = None
+    control_plane_admin: ControlPlaneClient | None = None
 
     async def close(self) -> None:
         await self.queue.close()
@@ -122,4 +129,29 @@ def build_container(settings: Settings) -> Container:
             ttl_seconds=settings.access_token_ttl_seconds,
         ),
         chunker=Chunker(chunk_size=settings.chunk_size_chars, chunk_overlap=settings.chunk_overlap_chars),
+        approvals=ApprovalService(
+            ttl_seconds=settings.approval_ttl_seconds,
+            require_distinct_approver=settings.approval_require_distinct_approver,
+        ),
+        mcp=_build_gateway(settings),
+        control_plane_admin=(
+            ControlPlaneClient(settings.control_plane_url, settings.control_plane_admin_token.get_secret_value())
+            if settings.control_plane_admin_token
+            else None
+        ),
     )
+
+
+def _build_gateway(settings: Settings) -> McpGateway | None:
+    if settings.mcp_signing_private_key is None:
+        return None
+    issuer = ToolTokenIssuer(
+        settings.mcp_signing_private_key.get_secret_value(), ttl_seconds=settings.mcp_token_ttl_seconds
+    )
+    urls: dict[ServerName, str] = {
+        "knowledge": settings.mcp_knowledge_url,
+        "github": settings.mcp_github_url,
+        "observability": settings.mcp_observability_url,
+        "operations": settings.mcp_operations_url,
+    }
+    return McpGateway(urls, issuer, timeout=settings.mcp_tool_timeout_seconds)

@@ -133,6 +133,29 @@ async def seed_demo(password: str, docs_dir: str) -> None:
         await c.close()
 
 
+async def mint_tool_token(email: str, workspace: str, server: str, ttl: int) -> None:
+    """For connecting independent MCP clients (e.g. MCP Inspector). Requires the private signing key, so only an
+    operator with access to the API's secrets can run it. Permissions come from the user's real membership."""
+    from opspilot.auth.service import load_principal
+    from opspilot.mcpservers.tokens import ToolTokenIssuer
+
+    settings = get_settings()
+    if settings.mcp_signing_private_key is None:
+        sys.exit("OPSPILOT_MCP_SIGNING_PRIVATE_KEY is not configured")
+    c = build_container(settings)
+    try:
+        async with c.db.session() as s:
+            user_id = await s.scalar(select(User.id).where(User.email == email.lower()))
+            ws_id = await s.scalar(select(Workspace.id).where(Workspace.slug == workspace))
+            if user_id is None or ws_id is None:
+                sys.exit("Unknown user or workspace")
+            principal = await load_principal(s, user_id, ws_id)
+        issuer = ToolTokenIssuer(settings.mcp_signing_private_key.get_secret_value(), ttl_seconds=min(ttl, 3600))
+        print(issuer.issue(principal, server))
+    finally:
+        await c.close()
+
+
 def main() -> None:
     configure_logging(get_settings().log_level, "opspilot-cli")
     p = argparse.ArgumentParser(prog="opspilot")
@@ -150,6 +173,12 @@ def main() -> None:
     d = sub.add_parser("seed-demo", help="Create the demo workspace/users and ingest the demo corpus")
     d.add_argument("--password", default=os.environ.get("OPSPILOT_DEMO_PASSWORD"))
     d.add_argument("--docs", default=os.environ.get("OPSPILOT_DEMO_DOCS", "/demo/docs"))
+    sub.add_parser("gen-mcp-keys", help="Print a new Ed25519 key pair for MCP tool tokens")
+    m = sub.add_parser("mint-tool-token", help="Mint a short-lived MCP tool token for a user (operator tool)")
+    m.add_argument("--email", required=True)
+    m.add_argument("--workspace", required=True, help="workspace slug")
+    m.add_argument("--server", required=True, choices=["knowledge", "github", "observability", "operations"])
+    m.add_argument("--ttl", type=int, default=300)
     args = p.parse_args()
     if args.cmd == "worker":
         asyncio.run(run_worker(args.concurrency))
@@ -165,6 +194,19 @@ def main() -> None:
         if not args.password:
             sys.exit("Provide --password or OPSPILOT_DEMO_PASSWORD")
         asyncio.run(seed_demo(args.password, args.docs))
+    elif args.cmd == "mint-tool-token":
+        asyncio.run(mint_tool_token(args.email, args.workspace, args.server, args.ttl))
+    elif args.cmd == "gen-mcp-keys":
+        import base64
+
+        from cryptography.hazmat.primitives import serialization as ser
+        from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+
+        key = Ed25519PrivateKey.generate()
+        raw = key.private_bytes(ser.Encoding.Raw, ser.PrivateFormat.Raw, ser.NoEncryption())
+        pub = key.public_key().public_bytes(ser.Encoding.Raw, ser.PublicFormat.Raw)
+        print(f"OPSPILOT_MCP_SIGNING_PRIVATE_KEY={base64.b64encode(raw).decode()}")
+        print(f"OPSPILOT_MCP_VERIFY_PUBLIC_KEY={base64.b64encode(pub).decode()}")
     else:  # pragma: no cover - argparse enforces the choices
         p.error(f"unknown command {args.cmd}")
 

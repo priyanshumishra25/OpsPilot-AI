@@ -15,6 +15,9 @@ x-backend-env: &backend-env
   OPSPILOT_CORS_ORIGINS: '["http://localhost:5173","http://localhost:8080"]'
   OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
   OPSPILOT_RATE_LIMIT_LOGIN_PER_MINUTE: ${OPSPILOT_RATE_LIMIT_LOGIN_PER_MINUTE:-10}
+  OPSPILOT_MCP_VERIFY_PUBLIC_KEY: ${OPSPILOT_MCP_VERIFY_PUBLIC_KEY:?set in .env}
+  OPSPILOT_CONTROL_PLANE_READ_TOKEN: ${CONTROL_PLANE_READ_TOKEN}
+  OPSPILOT_GITHUB_REPOSITORIES: '{"opspilot-demo/orders-api": {"provider": "local", "path": "/repos/orders-api", "workspaces": "*"}, "opspilot-demo/checkout-api": {"provider": "local", "path": "/repos/checkout-api", "workspaces": "*"}}'
 
 services:
   postgres:
@@ -88,7 +91,10 @@ services:
   api:
     build: ./backend
     command: ["uvicorn", "opspilot.main:app", "--host", "0.0.0.0", "--port", "8000", "--timeout-graceful-shutdown", "20"]
-    environment: *backend-env
+    environment:
+      <<: *backend-env
+      OPSPILOT_MCP_SIGNING_PRIVATE_KEY: ${OPSPILOT_MCP_SIGNING_PRIVATE_KEY:?set in .env}
+      OPSPILOT_CONTROL_PLANE_ADMIN_TOKEN: ${CONTROL_PLANE_ADMIN_TOKEN}
     ports: ["127.0.0.1:8000:8000"]
     volumes: [models:/models]
     depends_on:
@@ -116,8 +122,109 @@ services:
     depends_on:
       api: {condition: service_healthy}
 
+  # ---------------------------------------------------------------------------------------------
+  # MCP servers (Streamable HTTP). Each verifies EdDSA tool tokens minted by the API (public key only).
+  # ---------------------------------------------------------------------------------------------
+  mcp-knowledge:
+    build: ./backend
+    ports: ["127.0.0.1:8101:8101"]
+    command: ["python", "-m", "opspilot.mcpservers.knowledge"]
+    environment: *backend-env
+    volumes: [models:/models]
+    depends_on: {migrate: {condition: service_completed_successfully}}
+
+  mcp-github:
+    build: ./backend
+    ports: ["127.0.0.1:8102:8102"]
+    command: ["python", "-m", "opspilot.mcpservers.github"]
+    environment:
+      OPSPILOT_MCP_VERIFY_PUBLIC_KEY: ${OPSPILOT_MCP_VERIFY_PUBLIC_KEY}
+      OPSPILOT_JWT_SECRET: ${OPSPILOT_JWT_SECRET}
+      OPSPILOT_GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      OPSPILOT_GITHUB_REPOSITORIES: '{"opspilot-demo/orders-api": {"provider": "local", "path": "/repos/orders-api", "workspaces": "*"}, "opspilot-demo/checkout-api": {"provider": "local", "path": "/repos/checkout-api", "workspaces": "*"}}'
+    volumes: [demorepos:/repos:ro]
+    depends_on: {control-plane: {condition: service_healthy}}
+
+  mcp-observability:
+    build: ./backend
+    ports: ["127.0.0.1:8103:8103"]
+    command: ["python", "-m", "opspilot.mcpservers.observability"]
+    environment:
+      OPSPILOT_MCP_VERIFY_PUBLIC_KEY: ${OPSPILOT_MCP_VERIFY_PUBLIC_KEY}
+      OPSPILOT_JWT_SECRET: ${OPSPILOT_JWT_SECRET}
+      OPSPILOT_CONTROL_PLANE_READ_TOKEN: ${CONTROL_PLANE_READ_TOKEN}
+    depends_on: [prometheus, loki, control-plane]
+
+  mcp-operations:
+    build: ./backend
+    ports: ["127.0.0.1:8104:8104"]
+    command: ["python", "-m", "opspilot.mcpservers.operations"]
+    environment:
+      <<: *backend-env
+      # The only holder of the deploy token: the sole path to a mutation in the demo environment.
+      OPSPILOT_CONTROL_PLANE_DEPLOY_TOKEN: ${CONTROL_PLANE_DEPLOY_TOKEN}
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+      control-plane: {condition: service_healthy}
+
+  # ---------------------------------------------------------------------------------------------
+  # Isolated demo environment (fictional services). The control plane is the only system the
+  # operations MCP server can change, and only with the deploy token.
+  # ---------------------------------------------------------------------------------------------
+  control-plane:
+    build: ./demo
+    command: ["uvicorn", "demo.control_plane.app:app", "--host", "0.0.0.0", "--port", "8090"]
+    environment:
+      CONTROL_PLANE_READ_TOKEN: ${CONTROL_PLANE_READ_TOKEN:?set in .env}
+      CONTROL_PLANE_DEPLOY_TOKEN: ${CONTROL_PLANE_DEPLOY_TOKEN:?set in .env}
+      CONTROL_PLANE_ADMIN_TOKEN: ${CONTROL_PLANE_ADMIN_TOKEN:?set in .env}
+      DEMO_REPOS_DIR: /repos
+    volumes: [controlplane:/data, demorepos:/repos]
+    ports: ["127.0.0.1:8090:8090"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8090/healthz')"]
+      interval: 3s
+      retries: 20
+
+  orders-api:
+    build: ./demo
+    command: ["uvicorn", "demo.services.app:app", "--host", "0.0.0.0", "--port", "8000", "--log-level", "warning"]
+    environment: &demo-svc-env
+      SERVICE_NAME: orders-api
+      CONTROL_PLANE_URL: http://control-plane:8090
+      LOKI_PUSH_URL: http://loki:3100/loki/api/v1/push
+    depends_on: {control-plane: {condition: service_healthy}}
+
+  checkout-api:
+    build: ./demo
+    command: ["uvicorn", "demo.services.app:app", "--host", "0.0.0.0", "--port", "8000", "--log-level", "warning"]
+    environment:
+      <<: *demo-svc-env
+      SERVICE_NAME: checkout-api
+    depends_on: {control-plane: {condition: service_healthy}}
+
+  traffic:
+    build: ./demo
+    command: ["python", "-m", "demo.services.traffic"]
+    depends_on: [orders-api, checkout-api]
+
+  prometheus:
+    image: prom/prometheus:v3.15.0
+    command: ["--config.file=/etc/prometheus/prometheus.yml", "--storage.tsdb.retention.time=2d"]
+    volumes: [./infra/local/prometheus.yml:/etc/prometheus/prometheus.yml:ro, promdata:/prometheus]
+    ports: ["127.0.0.1:9090:9090"]
+
+  loki:
+    image: grafana/loki:3.7.9
+    ports: ["127.0.0.1:3100:3100"]
+    volumes: [lokidata:/loki]
+
 volumes:
   pgdata:
   redisdata:
   s3data:
   models:
+  controlplane:
+  demorepos:
+  promdata:
+  lokidata:

@@ -11,7 +11,9 @@ COPY alembic.ini ./
 RUN --mount=type=cache,target=/root/.cache/uv uv sync --frozen --no-dev
 
 FROM python:3.12-slim-bookworm AS runtime
-RUN groupadd --system --gid 10001 app && useradd --system --uid 10001 --gid app --home /app app \
+# git is used read-only by the GitHub MCP server's local-git provider (demo repositories).
+RUN apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/* \
+    && groupadd --system --gid 10001 app && useradd --system --uid 10001 --gid app --home /app app \
     && mkdir -p /models && chown app:app /models
 WORKDIR /app
 COPY --from=build --chown=app:app /app /app

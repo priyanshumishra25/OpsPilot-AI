@@ -1,0 +1,14 @@
+# Intentionally published, local-only example values (refused at startup outside environment=local/test)
+# and test-only fixtures. Real secrets belong in .env (git-ignored) or a secret manager.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Local-only example configuration and test fixtures"
+paths = [
+  '''^\.env\.example$''',
+  '''^backend/tests/''',
+]
+regexes = [
+  '''bG9jYWwtZGV2LW9ubHktb3BzcGlsb3QtbWNwLWtleSE=''',
+]

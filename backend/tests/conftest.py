@@ -18,6 +18,7 @@ from redis.asyncio import Redis
 from sqlalchemy import text
 
 from opspilot.api.app import create_app
+from opspilot.approvals.service import ApprovalService
 from opspilot.auth.passwords import hash_password
 from opspilot.auth.principal import Principal
 from opspilot.auth.tokens import TokenService
@@ -144,6 +145,7 @@ async def env(settings: Settings, db: Database) -> AsyncIterator[Env]:
             TEST_JWT_SECRET, issuer=settings.jwt_issuer, audience=settings.jwt_audience, ttl_seconds=600
         ),
         chunker=chunker,
+        approvals=ApprovalService(),
     )
     worker = IngestionWorker(
         db,

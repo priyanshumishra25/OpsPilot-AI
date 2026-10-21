@@ -8,6 +8,10 @@ from typing import Literal
 from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+# Published, local-only Ed25519 key pair used by .env.example. Refused outside environment=local/test.
+LOCAL_DEV_MCP_PRIVATE_KEY = "bG9jYWwtZGV2LW9ubHktb3BzcGlsb3QtbWNwLWtleSE="
+LOCAL_DEV_MCP_PUBLIC_KEY = "w09lOp4oszP5+QrYUQbCU0ndyTwCe+anvTf4zrLDVKQ="
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="OPSPILOT_", env_file=".env", extra="ignore")
@@ -83,6 +87,38 @@ class Settings(BaseSettings):
     ingestion_backoff_base_seconds: float = 2.0
     ingestion_backoff_max_seconds: float = 120.0
     ingestion_job_stale_seconds: int = 600
+
+    # ---- MCP -------------------------------------------------------------------------------------
+    # Ed25519 keys (base64 raw 32 bytes). The API holds the private key and mints short-lived per-server tool
+    # tokens; MCP servers hold only the public key.
+    mcp_signing_private_key: SecretStr | None = None
+    mcp_verify_public_key: str | None = None
+    mcp_token_ttl_seconds: int = 120
+    mcp_knowledge_url: str = "http://mcp-knowledge:8101/mcp"
+    mcp_github_url: str = "http://mcp-github:8102/mcp"
+    mcp_observability_url: str = "http://mcp-observability:8103/mcp"
+    mcp_operations_url: str = "http://mcp-operations:8104/mcp"
+    mcp_tool_timeout_seconds: float = 20.0
+
+    # GitHub MCP server. Repositories allow-list as JSON: {"owner/name": {"provider": "github"} |
+    # {"provider": "local", "path": "/repos/orders-api"}}
+    github_token: SecretStr | None = None
+    github_api_url: str = "https://api.github.com"
+    github_repositories: dict[str, dict[str, str]] = {}
+
+    # Observability MCP server
+    prometheus_url: str = "http://prometheus:9090"
+    loki_url: str = "http://loki:3100"
+    demo_services: list[str] = ["orders-api", "checkout-api"]
+
+    # Demo control plane (isolated demo environment only)
+    control_plane_url: str = "http://control-plane:8090"
+    control_plane_read_token: SecretStr | None = None
+    control_plane_deploy_token: SecretStr | None = None
+    control_plane_admin_token: SecretStr | None = None
+
+    approval_ttl_seconds: int = 1800
+    approval_require_distinct_approver: bool = True
 
     rate_limit_login_per_minute: int = 10
     rate_limit_query_per_minute: int = 60
