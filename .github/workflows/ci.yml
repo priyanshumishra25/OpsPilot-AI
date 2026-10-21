@@ -1,0 +1,149 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  UV_VERSION: "0.13.4"
+
+jobs:
+  backend:
+    name: Backend lint, types, tests
+    runs-on: ubuntu-24.04
+    defaults: { run: { working-directory: backend } }
+    env:
+      OPSPILOT_EMBEDDING_CACHE_DIR: ${{ github.workspace }}/.cache/models
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/cache@v4
+        with: { path: .cache/models, key: models-bge-small-en-v1.5-ms-marco-MiniLM-L-6-v2 }
+      - uses: astral-sh/setup-uv@v6
+        with: { version: "${{ env.UV_VERSION }}", enable-cache: true }
+      - run: uv sync --frozen --python 3.12
+      - run: uv run ruff check src tests
+      - run: uv run ruff format --check src tests
+      - run: uv run mypy
+      # Integration tests start pgvector Postgres and Redis via testcontainers (Docker is available on the runner).
+      - run: uv run pytest -q --junitxml=../test-results/backend.xml --cov=opspilot --cov-report=xml:../test-results/coverage.xml
+      - name: Migrations round-trip and drift check
+        env:
+          OPSPILOT_DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5433/postgres
+        run: |
+          docker run -d --name mig -e POSTGRES_PASSWORD=postgres -p 5433:5432 pgvector/pgvector:0.8.1-pg17
+          until docker exec mig pg_isready -U postgres; do sleep 1; done
+          uv run alembic upgrade head && uv run alembic downgrade base && uv run alembic upgrade head && uv run alembic check
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: backend-test-results, path: test-results/ }
+
+  retrieval-eval:
+    name: Deterministic retrieval regression eval
+    runs-on: ubuntu-24.04
+    needs: backend
+    services:
+      postgres:
+        image: pgvector/pgvector:0.8.1-pg17
+        env: { POSTGRES_USER: opspilot, POSTGRES_PASSWORD: opspilot, POSTGRES_DB: opspilot }
+        ports: ["5432:5432"]
+        options: --health-cmd "pg_isready -U opspilot" --health-interval 3s --health-retries 20
+    env:
+      OPSPILOT_DATABASE_URL: postgresql+asyncpg://opspilot:opspilot@localhost:5432/opspilot
+      OPSPILOT_JWT_SECRET: ci-only-jwt-secret-not-used-for-auth-000000
+      OPSPILOT_ENVIRONMENT: test
+      OPSPILOT_EMBEDDING_CACHE_DIR: ${{ github.workspace }}/.cache/models
+      OPSPILOT_LOG_LEVEL: WARNING
+    defaults: { run: { working-directory: backend } }
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+        with: { version: "${{ env.UV_VERSION }}", enable-cache: true }
+      - uses: actions/cache@v4
+        with: { path: .cache/models, key: models-bge-small-en-v1.5-ms-marco-MiniLM-L-6-v2 }
+      - run: uv sync --frozen --python 3.12
+      - run: uv run alembic upgrade head
+      - run: uv run python -m opspilot.evaluation.rag_eval --compare-baseline
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: rag-eval, path: evals/runs/ }
+
+  frontend:
+    name: Frontend lint, types, tests, build
+    runs-on: ubuntu-24.04
+    defaults: { run: { working-directory: frontend } }
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with: { node-version: 24, cache: npm, cache-dependency-path: frontend/package-lock.json }
+      - run: npm ci --no-audit --no-fund
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+  security:
+    name: Dependency and secret scanning
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+        with: { fetch-depth: 0 }
+      - uses: astral-sh/setup-uv@v6
+        with: { version: "${{ env.UV_VERSION }}" }
+      - name: Python dependency audit
+        working-directory: backend
+        run: uv export --frozen --no-dev --no-hashes --no-emit-project > /tmp/req.txt && uvx pip-audit -r /tmp/req.txt --no-deps --disable-pip --strict
+      - name: npm audit (production dependencies)
+        working-directory: frontend
+        run: npm audit --omit=dev --audit-level=high
+      - name: Secret scan
+        uses: gitleaks/gitleaks-action@v2
+        env: { GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}" }
+      - name: Static security analysis (Python)
+        working-directory: backend
+        run: uvx bandit -q -r src -ll
+
+  images:
+    name: Build container images
+    runs-on: ubuntu-24.04
+    needs: [backend, frontend]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with: { context: backend, push: false, tags: "opspilot-backend:ci", cache-from: type=gha, cache-to: "type=gha,mode=max" }
+      - uses: docker/build-push-action@v6
+        with: { context: frontend, push: false, tags: "opspilot-frontend:ci" }
+
+  e2e:
+    name: End-to-end (full local stack)
+    runs-on: ubuntu-24.04
+    needs: [backend, frontend]
+    steps:
+      - uses: actions/checkout@v5
+      - run: cp .env.example .env
+      - name: Start stack and seed demo data
+        env: { OPSPILOT_RATE_LIMIT_LOGIN_PER_MINUTE: "200" }
+        run: |
+          docker compose --profile demo up -d --build --wait api worker frontend
+          docker compose --profile demo run --rm seed
+          for i in $(seq 1 60); do
+            n=$(docker compose exec -T postgres psql -U opspilot -d opspilot -tAc "select count(*) from documents where status='indexed'")
+            [ "$n" -ge 8 ] && break; sleep 3
+          done
+      - uses: actions/setup-node@v5
+        with: { node-version: 24, cache: npm, cache-dependency-path: frontend/package-lock.json }
+      - working-directory: frontend
+        run: npm ci --no-audit --no-fund && npx playwright install --with-deps chromium && npx playwright test
+      - if: failure()
+        run: docker compose logs --no-color > compose-logs.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: e2e-report, path: "frontend/playwright-report/\ncompose-logs.txt" }
