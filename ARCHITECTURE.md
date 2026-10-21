@@ -1,7 +1,7 @@
 # Architecture
 
-This describes what is implemented. Planned components (MCP servers, the agent, approvals, AWS
-deployment) are listed at the end and don't exist yet.
+This describes what is implemented. Planned components (the agent, approval UI, AWS deployment) are listed at
+the end and don't exist yet.
 
 ## Processes
 
@@ -11,6 +11,8 @@ deployment) are listed at the end and don't exist yet.
 | Ingestion worker | `python -m opspilot.cli worker` | ingestion backlog; CPU-bound embedding |
 | Migrate / bootstrap | `alembic upgrade head && python -m opspilot.cli bootstrap` | one-shot |
 | Frontend | nginx serving the Vite build | static |
+| MCP servers ×4 | `python -m opspilot.mcpservers.<name>` | per tool family; knowledge holds the models |
+| Demo control plane, services, traffic | `demo/` image | demo only |
 
 The API and worker share one Python package and image but run as separate processes. Ingestion is
 the expensive, bursty workload, and isolating it keeps a large upload from degrading query latency.
@@ -101,9 +103,47 @@ keys and token patterns. OpenTelemetry spans cover HTTP (FastAPI instrumentation
 ingestion outcomes and stage durations, retrieval latency, provider-reported LLM tokens, and
 estimated cost. `/readyz` checks the database, Redis, object store and queue.
 
+## MCP layer
+
+```
+API (MCP client, McpGateway) --Ed25519 tool token (aud = server, 120 s)--> MCP server (public key only)
+   knowledge     -> Postgres (same hybrid retriever + permission predicates), re-resolves membership per call
+   github        -> allow-listed repos: GitHub REST API or local git (demo), validated refs/paths
+   observability -> Prometheus / Loki via fixed query templates; control plane (read token)
+   operations    -> control plane (deploy token, the only holder), approvals + incidents in Postgres
+```
+
+Each server is a separate process so a credential is held by exactly one process (for example, the deploy
+token only by `mcp-operations`) and tool families scale independently. Tool calls are logged as structured
+`mcp_tool_call` audit events (caller, tool, redacted arguments, outcome, duration); approval transitions,
+incident creation and refused operations are written to `audit_log`.
+
+## Approval state machine (`approvals/service.py`)
+
+```
+PENDING --approve (approvals:decide, approver != requester)--> APPROVED --begin_execution--> EXECUTING --> SUCCEEDED | FAILED
+   |--reject--> REJECTED        |--expiry--> EXPIRED
+   '--expiry--> EXPIRED
+```
+
+Every arrow is a conditional `UPDATE ... WHERE status = <from> [AND expires_at > now()] RETURNING`. Execution
+requires the hash of the presented arguments to equal the approved hash, sets a unique `execution_id` (also the
+control-plane idempotency key), and re-validates the target's `current_version` and `state_version` against the
+snapshot taken at request time before deploying with compare-and-swap.
+
+## Demo environment (`demo/`)
+
+- **Control plane** (FastAPI + SQLite): releases read from git tags, a seeded deployment history, deploys
+  (compare-and-swap on `state_version`, idempotency keys), scenarios. Separate read, deploy and admin tokens.
+- **orders-api / checkout-api**: one codebase whose behaviour follows the deployed version and active faults
+  (e.g. v2.16.0 holds a pooled DB connection across a 1.5–3 s inventory call). Prometheus metrics; JSON logs to
+  stdout and Loki.
+- **traffic**: steady synthetic load (12 + 6 req/s), including occasional customer notes containing an injection
+  attempt that ends up in logs.
+- **git history**: `demo/repos/build_repos.py` builds the services' repositories with fixed authors and dates, so
+  commit SHAs are identical everywhere.
+
 ## Planned (not implemented)
 
-MCP servers (knowledge, GitHub, observability, operations), Claude Agent SDK investigation sessions,
-the approval state machine, demo Orders and Checkout services with failure injection, the
-OpenTelemetry collector and Prometheus stack in Compose, Terraform for AWS (ECS Fargate, RDS, S3, SQS,
-Secrets Manager), and a deployment workflow with GitHub OIDC.
+Claude Agent SDK investigation sessions, the approval and integrations UI, the OpenTelemetry collector,
+Terraform for AWS (ECS Fargate, RDS, S3, SQS, Secrets Manager), and a deployment workflow with GitHub OIDC.

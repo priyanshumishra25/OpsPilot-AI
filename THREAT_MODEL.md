@@ -1,6 +1,6 @@
 # Threat model
 
-Scope: the implemented system (Phases 0–1). Rows marked *planned* describe controls required before
+Scope: the implemented system (Phases 0–2). Rows marked *planned* describe controls required before
 the corresponding feature ships.
 
 ## Assets
@@ -28,5 +28,7 @@ tokens; the model API key; future infrastructure-mutation capability.
 | T8 | Token theft by XSS | No HTML rendering of untrusted text, CSP, short TTL | Partial; httpOnly refresh cookies planned |
 | T9 | Secret leakage in logs or the UI | Redaction processor; settings as `SecretStr`; no secrets in API responses | Implemented, tested |
 | T10 | Duplicate or replayed ingestion jobs corrupt the index | Atomic claim, transactional version swap, idempotent chunk replacement | Implemented, tested |
-| T11 | *Planned:* model-initiated infrastructure mutation | Server-side approval state machine binding approver, arguments, target state and a one-time execution ID; revalidation before execution; demo environment only | Not implemented |
-| T12 | *Planned:* tool results (logs, files) carrying injection | Same untrusted-data handling as T3, plus tool allow-lists and identity from the authenticated principal only | Not implemented |
+| T11 | Model-initiated infrastructure mutation | No approve tool exists; the server-side state machine binds requester, arguments (hash), target state and a one-time execution ID; approver ≠ requester; live revalidation before a compare-and-swap deploy; demo environment only; deploy token in one process | Implemented, tested (incl. concurrency and changed target) |
+| T12 | Tool results (logs, PR bodies, files) carrying injection | Results returned as data with explicit "untrusted" notes; tools have no side effects except the approval-gated rollback; identity never from arguments. The demo traffic deliberately writes an injection attempt into logs | Server side implemented; agent-side handling pending (Phase 3) |
+| T13 | Forged or replayed tool tokens; a compromised MCP server minting tokens | EdDSA signature with only the public key on servers, per-server audience, short TTL, `jti` logged; membership re-check on DB-backed servers | Implemented, tested |
+| T14 | Query or command injection through tool arguments (PromQL/LogQL, git, GitHub search qualifiers) | Server-side templates, allow-listed services and repositories, validated refs and paths, argument arrays without a shell, qualifier rejection | Implemented, tested |

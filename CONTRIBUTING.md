@@ -11,3 +11,9 @@
    (`--update-baseline`) only in the same PR that explains why the numbers changed.
 5. Test doubles live in `backend/tests/fakes.py` and must never be imported by application code.
 6. Don't commit secrets, `.env`, Terraform state, or evaluation run artifacts.
+
+## Troubleshooting
+
+- **`ModuleNotFoundError: opspilot` on macOS** when the repository lives in an iCloud-synced folder: macOS can
+  set the `hidden` flag on files in `.venv`, and Python skips hidden `.pth` files. Pytest and Alembic add `src`
+  to the path explicitly; for ad-hoc commands use `PYTHONPATH=src` or `chflags nohidden .venv/lib/python3.12/site-packages/*.pth`.

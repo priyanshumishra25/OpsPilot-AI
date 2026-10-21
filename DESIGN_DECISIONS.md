@@ -78,6 +78,36 @@ Simple and CSRF-immune, but readable by any script that achieves XSS. Mitigation
 of model or document text (answers render as text nodes), a strict CSP from nginx, and short token
 lifetimes. Planned: httpOnly refresh cookie with rotation and server-side revocation.
 
+## MCP servers instead of in-process tool functions
+Each tool family runs as its own MCP server with typed schemas. Concretely this buys: (1) credential isolation:
+the control-plane deploy token lives only in `mcp-operations`, the GitHub token only in `mcp-github`; (2) the
+same tools are usable by any MCP client (verified with the MCP Inspector CLI) and by the agent, with one
+implementation; (3) independent scaling and failure isolation (a slow Loki doesn't block knowledge search). The
+cost is an extra network hop per call (single-digit milliseconds locally) and more processes.
+
+## Identity via short-lived, audience-bound, asymmetric tool tokens
+The model never supplies identity: the API mints a token per connection for the authenticated user, and
+servers verify it. Ed25519 rather than a shared HMAC secret means a compromised MCP server can verify tokens but
+not mint them. The audience is per server, so a token for `knowledge` is rejected by `operations`. Knowledge and
+operations also re-resolve membership per call, closing the revocation window. Not yet done: binding tokens to an
+agent session (the `sid` claim exists and is logged, but isn't enforced).
+
+## Approval as a database state machine, not a prompt rule
+The model can request and (after approval) trigger an action, but cannot approve, change approved arguments,
+reuse an approval, or act on a changed target. All of that is enforced by conditional updates and hash
+comparison, tested with concurrent execution attempts. Two-person approval (approver ≠ requester) is on by
+default (`OPSPILOT_APPROVAL_REQUIRE_DISTINCT_APPROVER`).
+
+## A simulated deployment system for the demo
+Rollbacks need something real to act on that is safe to break. The demo control plane is a minimal deployment
+system (releases from git tags, compare-and-swap deploys, idempotency keys) whose services really change
+behaviour by version, so telemetry and recovery are observed rather than scripted. It is deliberately the
+*only* system the operations server can mutate.
+
+## Deterministic demo git history
+Building the demo repositories with fixed identities and timestamps makes commit SHAs reproducible, so the
+control plane, the GitHub server, tests and documentation all refer to the same real commits without committing
+nested repositories.
+
 ## Not yet decided by implementation
-Why MCP instead of direct API wrappers, why the Claude Agent SDK, why ECS instead of Kubernetes, and
-the approval design are deferred to the phases that implement them, so they can describe actual code.
+Why the Claude Agent SDK, and why ECS instead of Kubernetes, are deferred to the phases that implement them.

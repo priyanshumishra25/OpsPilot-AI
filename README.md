@@ -16,10 +16,15 @@ implemented and verified; nothing else should be assumed to exist.
 |---|---|---|
 | 0 | Monorepo, Docker Compose stack, Postgres/pgvector schema + migrations, API + frontend shell, CI | **done** |
 | 1 | Production RAG: ingestion worker, chunking, embeddings, hybrid retrieval, reranking, permissions, grounded generation with verifiable citations, golden-set evaluation | **done** (generation verified only against a scripted test double, see below) |
-| 2 | MCP servers (knowledge, GitHub, observability, operations) | not started |
+| 2 | MCP servers (knowledge, GitHub, observability, operations), demo environment with real telemetry, approval state machine | **done**; GitHub code search unverified (needs a token) |
 | 3 | Claude Agent SDK incident investigation | not started |
-| 4 | Approval state machine and safe demo remediation | not started |
+| 4 | Approval UI and agent-driven remediation | backend done in Phase 2; UI and agent handoff not started |
 | 5–8 | Full product UI, hardening, AWS/Terraform deployment, final evaluation | not started |
+
+**Phase 2 verification:** the four MCP servers were exercised by the official MCP Inspector CLI (an independent
+client) against the live stack through a complete incident: detection, logs, commit diff, runbook retrieval,
+rollback request, refusal before approval, human approval, single execution, refusal on replay, and recovery in
+Prometheus. See [docs/INCIDENT_DEMO.md](docs/INCIDENT_DEMO.md) and [docs/MCP_TOOLS.md](docs/MCP_TOOLS.md).
 
 **Unverified external integration:** no Anthropic API key was available while building, so answer
 generation has been exercised only through a scripted test double of the SDK's streaming interface
@@ -88,6 +93,12 @@ flowchart LR
   API -- hybrid search --> PG
   API -- grounded answer --> C[Claude API]
   API -- rate limits --> R[(Redis)]
+  API -- tool tokens --> MCP[MCP servers: knowledge / github / observability / operations]
+  MCP --> PG
+  MCP --> PROM[(Prometheus)] & LOKI[(Loki)] & GIT[(git repos / GitHub)]
+  MCP -- deploy token --> CP[Demo control plane]
+  CP --> DEMO[orders-api / checkout-api]
+  DEMO --> PROM & LOKI
 ```
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) for module boundaries and data flow, and
@@ -134,7 +145,7 @@ npx playwright test                           # against a running stack
 cd backend && uv run python -m opspilot.evaluation.rag_eval --compare-baseline
 ```
 
-Latest local verification: 58 backend tests (unit + integration against real pgvector and Redis),
+Latest local verification (Phase 2): 91 backend tests (unit + integration against real pgvector and Redis),
 9 frontend unit tests and 5 Playwright E2E tests against the full Compose stack (desktop and mobile
 viewports) all pass; ruff, mypy `--strict`, eslint (type-aware) and `tsc` are clean. The GitHub
 Actions workflow in `.github/workflows/ci.yml` has not yet run on GitHub.
@@ -157,14 +168,16 @@ obeying it. Details: [SECURITY.md](SECURITY.md), [THREAT_MODEL.md](THREAT_MODEL.
   was reduced).
 - The golden set is small and was written by the same author as the corpus.
 - No OCR; scanned PDFs are rejected with a clear error.
-- GitHub repository ingestion, MCP, the agent, approvals, Terraform and deployment are not built yet.
+- GitHub repository *ingestion* into the knowledge base, the agent, the approval UI, Terraform and deployment are
+  not built yet. GitHub code search via the REST provider needs a token and is unverified.
+- Health classification uses 5-minute windows, so it lags recovery by up to 5 minutes.
 
 ## Repository layout
 
 ```
 backend/    FastAPI app, ingestion worker, RAG pipeline, CLI, Alembic migrations, tests
 frontend/   React + TypeScript SPA, Vitest unit tests, Playwright E2E
-demo/docs/  fictional engineering documentation used by the demo and the golden set
+demo/       demo environment: control plane, orders/checkout services, traffic, git history, docs corpus
 evals/      golden dataset, committed baseline, run artifacts (git-ignored)
 infra/      local infrastructure configuration
 docs/       screenshots and API notes

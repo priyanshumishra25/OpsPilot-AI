@@ -30,6 +30,8 @@ jobs:
         with: { version: "${{ env.UV_VERSION }}", enable-cache: true }
       - run: uv sync --frozen --python 3.12
       - run: uv run ruff check src tests
+      - name: Lint demo environment
+        run: uv run ruff check ../demo && uv run ruff format --check ../demo
       - run: uv run ruff format --check src tests
       - run: uv run mypy
       # Integration tests start pgvector Postgres and Redis via testcontainers (Docker is available on the runner).
