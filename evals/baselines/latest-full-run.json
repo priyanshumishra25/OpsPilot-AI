@@ -1,0 +1,4941 @@
+{
+  "run_id": "20261021T032626Z",
+  "git_sha": "unknown",
+  "environment": {
+    "python": "3.12.15",
+    "platform": "macOS-26.5.2-arm64-arm-64bit",
+    "machine": "arm64",
+    "note": "Latency measured in-process on a single developer machine; not a production benchmark."
+  },
+  "settings": {
+    "embedding_model": "BAAI/bge-small-en-v1.5",
+    "reranker_model": "Xenova/ms-marco-MiniLM-L-6-v2",
+    "k": 5,
+    "candidate_k": 30,
+    "rrf_k": 60,
+    "chunk_size_chars": 1500,
+    "chunk_overlap_chars": 200
+  },
+  "dataset": {
+    "path": "evals/golden/rag_golden.jsonl",
+    "questions": 35,
+    "answerable": 28,
+    "dev": 16,
+    "test": 19
+  },
+  "ingestion_seconds": 1.22,
+  "retrieval": {
+    "dense": {
+      "recall@5": 0.9643,
+      "precision@5": 0.2357,
+      "mrr": 0.8982,
+      "ndcg@5": 0.8914,
+      "by_split": {
+        "dev": {
+          "recall@5": 0.9231,
+          "mrr": 0.9385,
+          "ndcg@5": 0.9021
+        },
+        "test": {
+          "recall@5": 1.0,
+          "mrr": 0.8633,
+          "ndcg@5": 0.8821
+        }
+      },
+      "latency_ms": {
+        "p50": 16.6,
+        "p95": 32.3
+      },
+      "n_scored": 28
+    },
+    "lexical": {
+      "recall@5": 0.881,
+      "precision@5": 0.2137,
+      "mrr": 0.7464,
+      "ndcg@5": 0.7587,
+      "by_split": {
+        "dev": {
+          "recall@5": 0.8846,
+          "mrr": 0.8462,
+          "ndcg@5": 0.8304
+        },
+        "test": {
+          "recall@5": 0.8778,
+          "mrr": 0.66,
+          "ndcg@5": 0.6967
+        }
+      },
+      "latency_ms": {
+        "p50": 7.5,
+        "p95": 9.6
+      },
+      "n_scored": 28
+    },
+    "hybrid_rrf": {
+      "recall@5": 0.9464,
+      "precision@5": 0.2286,
+      "mrr": 0.8631,
+      "ndcg@5": 0.8721,
+      "by_split": {
+        "dev": {
+          "recall@5": 0.9231,
+          "mrr": 0.9231,
+          "ndcg@5": 0.9054
+        },
+        "test": {
+          "recall@5": 0.9667,
+          "mrr": 0.8111,
+          "ndcg@5": 0.8432
+        }
+      },
+      "latency_ms": {
+        "p50": 16.0,
+        "p95": 27.2
+      },
+      "n_scored": 28
+    },
+    "dense+rerank": {
+      "recall@5": 0.9821,
+      "precision@5": 0.2429,
+      "mrr": 0.9464,
+      "ndcg@5": 0.9394,
+      "by_split": {
+        "dev": {
+          "recall@5": 0.9615,
+          "mrr": 1.0,
+          "ndcg@5": 0.9641
+        },
+        "test": {
+          "recall@5": 1.0,
+          "mrr": 0.9,
+          "ndcg@5": 0.918
+        }
+      },
+      "latency_ms": {
+        "p50": 337.7,
+        "p95": 397.6
+      },
+      "n_scored": 28
+    },
+    "hybrid_rrf+rerank": {
+      "recall@5": 0.9821,
+      "precision@5": 0.2429,
+      "mrr": 0.9464,
+      "ndcg@5": 0.9394,
+      "by_split": {
+        "dev": {
+          "recall@5": 0.9615,
+          "mrr": 1.0,
+          "ndcg@5": 0.9641
+        },
+        "test": {
+          "recall@5": 1.0,
+          "mrr": 0.9,
+          "ndcg@5": 0.918
+        }
+      },
+      "latency_ms": {
+        "p50": 355.7,
+        "p95": 407.1
+      },
+      "n_scored": 28
+    },
+    "hybrid_rrf+rerank@20": {
+      "recall@5": 0.9821,
+      "precision@5": 0.2429,
+      "mrr": 0.9464,
+      "ndcg@5": 0.9384,
+      "by_split": {
+        "dev": {
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "ndcg@5": 0.9823
+        },
+        "test": {
+          "recall@5": 0.9667,
+          "mrr": 0.9,
+          "ndcg@5": 0.9004
+        }
+      },
+      "latency_ms": {
+        "p50": 193.8,
+        "p95": 214.1
+      },
+      "n_scored": 28
+    },
+    "hybrid_rrf+rerank@10": {
+      "recall@5": 0.9821,
+      "precision@5": 0.2429,
+      "mrr": 0.9464,
+      "ndcg@5": 0.9384,
+      "by_split": {
+        "dev": {
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "ndcg@5": 0.9823
+        },
+        "test": {
+          "recall@5": 0.9667,
+          "mrr": 0.9,
+          "ndcg@5": 0.9004
+        }
+      },
+      "latency_ms": {
+        "p50": 79.8,
+        "p95": 123.2
+      },
+      "n_scored": 28
+    }
+  },
+  "abstention": {
+    "hybrid_rrf+rerank": {
+      "signal": "top_rerank_score",
+      "threshold": -4.4705,
+      "rule": "top_rerank_score >= threshold \u21d2 sufficient",
+      "dev_balanced_accuracy": 1.0,
+      "test_answerable_kept": 1.0,
+      "test_unanswerable_abstained": 1.0,
+      "test_balanced_accuracy": 1.0,
+      "n_test": {
+        "answerable": 15,
+        "unanswerable": 4
+      }
+    },
+    "dense": {
+      "signal": "top_dense_distance",
+      "threshold": 0.3667,
+      "rule": "top_dense_distance <= threshold \u21d2 sufficient",
+      "dev_balanced_accuracy": 1.0,
+      "test_answerable_kept": 1.0,
+      "test_unanswerable_abstained": 1.0,
+      "test_balanced_accuracy": 1.0,
+      "n_test": {
+        "answerable": 15,
+        "unanswerable": 4
+      }
+    }
+  },
+  "permission_checks": {
+    "forbidden_document_returned": {
+      "dense": [],
+      "lexical": [],
+      "hybrid_rrf": [],
+      "dense+rerank": [],
+      "hybrid_rrf+rerank": [],
+      "hybrid_rrf+rerank@20": [],
+      "hybrid_rrf+rerank@10": []
+    },
+    "passed": true
+  },
+  "generation": {
+    "status": "not requested"
+  },
+  "per_question": {
+    "dense": [
+      {
+        "id": "q01",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 30.26,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.17742908000946045,
+        "returned": [
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "checkout-db-connection-runbook.md#Verification",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "checkout-db-connection-runbook.md#Checkout Service Runbook: Database Connection Failure",
+          "checkout-db-connection-runbook.md#Preconditions"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q02",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 76.7,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.15823516721234188,
+        "returned": [
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "checkout-db-connection-runbook.md#Verification",
+          "checkout-db-connection-runbook.md#Symptoms",
+          "postmortem-2026-03-orders-pool.md#Lessons and action items"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q03",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 36.91,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.2550776752875836,
+        "returned": [
+          "checkout-db-connection-runbook.md#Symptoms",
+          "checkout-db-connection-runbook.md#Checkout Service Runbook: Database Connection Failure",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "checkout-db-connection-runbook.md#Verification",
+          "checkout-db-connection-runbook.md#Preconditions"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q04",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 18.5,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.21348416805267334,
+        "returned": [
+          "checkout-db-connection-runbook.md#Verification",
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "checkout-db-connection-runbook.md#Checkout Service Runbook: Database Connection Failure",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "checkout-db-connection-runbook.md#Preconditions"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 0.2,
+        "ndcg": 0.38685280723454163
+      },
+      {
+        "id": "q05",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 20.53,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.23491308272920508,
+        "returned": [
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "postmortem-2026-03-orders-pool.md#Summary",
+          "checkout-db-connection-runbook.md#Verification",
+          "checkout-db-connection-runbook.md#Symptoms"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q06",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 16.56,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.3044714331626892,
+        "returned": [
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "checkout-db-connection-runbook.md#Verification",
+          "payment-provider-integration.md#Failure handling",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "checkout-db-connection-runbook.md#Preconditions"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 0.5,
+        "ndcg": 0.6309297535714575
+      },
+      {
+        "id": "q07",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 17.18,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.13787490129470825,
+        "returned": [
+          "orders-api-runbook.md#OrdersApiHigh5xxRate",
+          "orders-api-runbook.md#OrdersApiLatencyHigh",
+          "orders-api-runbook.md#Rolling back",
+          "postmortem-2026-03-orders-pool.md#Timeline (UTC)",
+          "orders-api-runbook.md#Service overview"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q08",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 20.96,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.20885679616250474,
+        "returned": [
+          "orders-api-runbook.md#OrdersApiHigh5xxRate",
+          "orders-api-runbook.md#Rolling back",
+          "orders-api-runbook.md#Known failure modes",
+          "postmortem-2026-03-orders-pool.md#Summary",
+          "orders-api-runbook.md#OrdersApiLatencyHigh"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.6,
+        "mrr": 1.0,
+        "ndcg": 0.9060254355346823
+      },
+      {
+        "id": "q09",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 19.65,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.23969221115112305,
+        "returned": [
+          "postmortem-2026-03-orders-pool.md#Summary",
+          "orders-api-runbook.md#Known failure modes",
+          "postmortem-2026-03-orders-pool.md#Lessons and action items",
+          "orders-api-runbook.md#OrdersApiLatencyHigh",
+          "postmortem-2026-03-orders-pool.md#Root cause"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.4,
+        "mrr": 1.0,
+        "ndcg": 0.8772153153380493
+      },
+      {
+        "id": "q10",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 18.87,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.21116364002227783,
+        "returned": [
+          "orders-api-runbook.md#Known failure modes",
+          "postmortem-2026-03-orders-pool.md#Summary",
+          "postmortem-2026-03-orders-pool.md#Root cause",
+          "orders-api-runbook.md#OrdersApiLatencyHigh",
+          "postmortem-2026-03-orders-pool.md#Lessons and action items"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q11",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 15.49,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.15244263410567638,
+        "returned": [
+          "orders-api-runbook.md#Rolling back",
+          "orders-api-runbook.md#Service overview",
+          "service-architecture.md#Dependencies and timeouts",
+          "postmortem-2026-03-orders-pool.md#Lessons and action items",
+          "orders-api-runbook.md#Known failure modes"
+        ],
+        "forbidden_hit": false,
+        "recall": 0.5,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 0.6131471927654584
+      },
+      {
+        "id": "q12",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 15.09,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.2008255124092102,
+        "returned": [
+          "deployment-process.md#Rollback policy",
+          "orders-api-runbook.md#Rolling back",
+          "deployment-process.md#Post-deployment verification",
+          "deployment-process.md#Deployment windows",
+          "deployment-process.md#Deployment pipeline"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.4,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q13",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 16.6,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.21602926063188221,
+        "returned": [
+          "deployment-process.md#Rollback policy",
+          "orders-api-runbook.md#Rolling back",
+          "deployment-process.md#Post-deployment verification",
+          "payment-provider-integration.md#Vendor notes",
+          "deployment-process.md#Deployment pipeline"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q14",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 19.74,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.20917758832245015,
+        "returned": [
+          "deployment-process.md#Deployment windows",
+          "deployment-process.md#Rollback policy",
+          "deployment-process.md#Post-deployment verification",
+          "deployment-process.md#Deployment pipeline",
+          "oncall-escalation.md#Severity levels"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q15",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 17.64,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.1902588975120848,
+        "returned": [
+          "deployment-process.md#Deployment pipeline",
+          "deployment-process.md#Post-deployment verification",
+          "deployment-process.md#Deployment windows",
+          "deployment-process.md#Rollback policy",
+          "orders-api-runbook.md#Rolling back"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q16",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 15.19,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.22002395033407962,
+        "returned": [
+          "deployment-process.md#Post-deployment verification",
+          "deployment-process.md#Deployment windows",
+          "deployment-process.md#Deployment pipeline",
+          "deployment-process.md#Rollback policy",
+          "orders-api-runbook.md#OrdersApiHigh5xxRate"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q17",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 17.59,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.19240920588915167,
+        "returned": [
+          "service-architecture.md#Dependencies and timeouts",
+          "orders-api-runbook.md#Known failure modes",
+          "orders-api-runbook.md#Service overview",
+          "postmortem-2026-03-orders-pool.md#Summary",
+          "orders-api-runbook.md#OrdersApiLatencyHigh"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q18",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 16.59,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.28597470689120896,
+        "returned": [
+          "service-architecture.md#Services",
+          "orders-api-runbook.md#Orders API Runbook",
+          "orders-api-runbook.md#Service overview",
+          "payment-provider-integration.md#Payment Provider Integration",
+          "checkout-db-connection-runbook.md#Checkout Service Runbook: Database Connection Failure"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q19",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 15.23,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.1605436110172489,
+        "returned": [
+          "service-architecture.md#Request flow",
+          "orders-api-runbook.md#Service overview",
+          "postmortem-2026-03-orders-pool.md#Summary",
+          "service-architecture.md#Dependencies and timeouts",
+          "orders-api-runbook.md#Known failure modes"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q20",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 16.43,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.1448629153101646,
+        "returned": [
+          "oncall-escalation.md#Escalation",
+          "oncall-escalation.md#Severity levels",
+          "orders-api-runbook.md#OrdersApiLatencyHigh",
+          "oncall-escalation.md#Rotations",
+          "postmortem-2026-03-orders-pool.md#Lessons and action items"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q21",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 14.64,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.30902886390686035,
+        "returned": [
+          "oncall-escalation.md#Severity levels",
+          "postmortem-2026-03-orders-pool.md#Postmortem: Orders API connection pool exhaustion (2026-03-12)",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "postmortem-2026-03-orders-pool.md#Timeline (UTC)",
+          "orders-api-runbook.md#OrdersApiHigh5xxRate"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q22",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 14.56,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.29957568645477295,
+        "returned": [
+          "payment-provider-integration.md#Overview",
+          "service-architecture.md#Dependencies and timeouts",
+          "service-architecture.md#Request flow",
+          "oncall-escalation.md#Rotations",
+          "payment-provider-integration.md#Vendor notes"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 0.25,
+        "ndcg": 0.43067655807339306
+      },
+      {
+        "id": "q23",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 19.13,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.30641210079193115,
+        "returned": [
+          "orders-api-runbook.md#OrdersApiHigh5xxRate",
+          "postmortem-2026-03-orders-pool.md#Timeline (UTC)",
+          "orders-api-runbook.md#Known failure modes",
+          "orders-api-runbook.md#Service overview",
+          "postmortem-2026-03-orders-pool.md#Root cause"
+        ],
+        "forbidden_hit": false,
+        "recall": 0.5,
+        "precision": 0.2,
+        "mrr": 0.2,
+        "ndcg": 0.23719771276929622
+      },
+      {
+        "id": "q24",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 17.3,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.2168790777017885,
+        "returned": [
+          "postmortem-2026-03-orders-pool.md#Lessons and action items",
+          "postmortem-2026-03-orders-pool.md#Summary",
+          "postmortem-2026-03-orders-pool.md#Postmortem: Orders API connection pool exhaustion (2026-03-12)",
+          "postmortem-2026-03-orders-pool.md#Timeline (UTC)",
+          "orders-api-runbook.md#Rolling back"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.4,
+        "mrr": 1.0,
+        "ndcg": 0.8772153153380493
+      },
+      {
+        "id": "q25",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 14.72,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.21145143645422892,
+        "returned": [
+          "payment-provider-integration.md#Failure handling",
+          "payment-provider-integration.md#Vendor notes",
+          "payment-provider-integration.md#Idempotency",
+          "service-architecture.md#Dependencies and timeouts",
+          "payment-provider-integration.md#Payment Provider Integration"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q26",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 15.87,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.28419492934972346,
+        "returned": [
+          "payment-provider-integration.md#Idempotency",
+          "service-architecture.md#Dependencies and timeouts",
+          "payment-provider-integration.md#Failure handling",
+          "payment-provider-integration.md#Overview",
+          "checkout-db-connection-runbook.md#If recovery fails"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "u01",
+        "split": "dev",
+        "answerable": false,
+        "latency_ms": 15.49,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.42941761016845703,
+        "returned": [
+          "payment-provider-integration.md#Vendor notes",
+          "deployment-process.md#Deployment pipeline",
+          "deployment-process.md#Rollback policy",
+          "deployment-process.md#Deployment windows",
+          "oncall-escalation.md#Rotations"
+        ],
+        "forbidden_hit": false
+      },
+      {
+        "id": "u02",
+        "split": "test",
+        "answerable": false,
+        "latency_ms": 15.35,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.39177043536061384,
+        "returned": [
+          "service-architecture.md#Observability",
+          "orders-api-runbook.md#OrdersApiLatencyHigh",
+          "orders-api-runbook.md#OrdersApiHigh5xxRate",
+          "checkout-db-connection-runbook.md#Preconditions",
+          "orders-api-runbook.md#Rolling back"
+        ],
+        "forbidden_hit": false
+      },
+      {
+        "id": "u03",
+        "split": "dev",
+        "answerable": false,
+        "latency_ms": 14.11,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.4345690686024305,
+        "returned": [
+          "oncall-escalation.md#Rotations",
+          "orders-api-runbook.md#OrdersApiLatencyHigh",
+          "oncall-escalation.md#Escalation",
+          "service-architecture.md#Dependencies and timeouts",
+          "deployment-process.md#Deployment windows"
+        ],
+        "forbidden_hit": false
+      },
+      {
+        "id": "u04",
+        "split": "test",
+        "answerable": false,
+        "latency_ms": 15.32,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.44091496223717264,
+        "returned": [
+          "orders-api-runbook.md#Rolling back",
+          "payment-provider-integration.md#Vendor notes",
+          "postmortem-2026-03-orders-pool.md#Root cause",
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "postmortem-2026-03-orders-pool.md#Summary"
+        ],
+        "forbidden_hit": false
+      },
+      {
+        "id": "u05",
+        "split": "dev",
+        "answerable": false,
+        "latency_ms": 14.85,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.4242960810661316,
+        "returned": [
+          "payment-provider-integration.md#Vendor notes",
+          "service-architecture.md#Services",
+          "service-architecture.md#Observability",
+          "orders-api-runbook.md#Service overview",
+          "service-architecture.md#Dependencies and timeouts"
+        ],
+        "forbidden_hit": false
+      },
+      {
+        "id": "u06",
+        "split": "test",
+        "answerable": false,
+        "latency_ms": 18.93,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.4214130984894564,
+        "returned": [
+          "deployment-process.md#Deployment pipeline",
+          "postmortem-2026-03-orders-pool.md#Lessons and action items",
+          "payment-provider-integration.md#Vendor notes",
+          "payment-provider-integration.md#Payment Provider Integration",
+          "service-architecture.md#Services"
+        ],
+        "forbidden_hit": false
+      },
+      {
+        "id": "p01",
+        "split": "test",
+        "answerable": false,
+        "latency_ms": 15.13,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.39795602584408973,
+        "returned": [
+          "checkout-db-connection-runbook.md#Checkout Service Runbook: Database Connection Failure",
+          "service-architecture.md#Services",
+          "orders-api-runbook.md#Orders API Runbook",
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "payment-provider-integration.md#Payment Provider Integration"
+        ],
+        "forbidden_hit": false
+      },
+      {
+        "id": "p02",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 15.71,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.2935704413908444,
+        "returned": [
+          "database-credentials-rotation.md#Procedure",
+          "checkout-db-connection-runbook.md#Checkout Service Runbook: Database Connection Failure",
+          "service-architecture.md#Services",
+          "database-credentials-rotation.md#Database Credential Rotation (Restricted: SRE only)",
+          "database-credentials-rotation.md#Schedule"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "i01",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 14.62,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.1737162574360509,
+        "returned": [
+          "payment-provider-integration.md#Failure handling",
+          "service-architecture.md#Dependencies and timeouts",
+          "checkout-db-connection-runbook.md#Checkout Service Runbook: Database Connection Failure",
+          "payment-provider-integration.md#Overview",
+          "checkout-db-connection-runbook.md#If recovery fails"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      }
+    ],
+    "lexical": [
+      {
+        "id": "q01",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 10.96,
+        "top_rerank_score": null,
+        "top_dense_distance": null,
+        "returned": [
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "checkout-db-connection-runbook.md#Checkout Service Runbook: Database Connection Failure",
+          "orders-api-runbook.md#Service overview",
+          "orders-api-runbook.md#Known failure modes",
+          "service-architecture.md#Services"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q02",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 8.57,
+        "top_rerank_score": null,
+        "top_dense_distance": null,
+        "returned": [
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "checkout-db-connection-runbook.md#Checkout Service Runbook: Database Connection Failure",
+          "postmortem-2026-03-orders-pool.md#Postmortem: Orders API connection pool exhaustion (2026-03-12)",
+          "orders-api-runbook.md#Known failure modes",
+          "checkout-db-connection-runbook.md#If recovery fails"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q03",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 8.46,
+        "top_rerank_score": null,
+        "top_dense_distance": null,
+        "returned": [
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "checkout-db-connection-runbook.md#Symptoms",
+          "checkout-db-connection-runbook.md#Checkout Service Runbook: Database Connection Failure",
+          "postmortem-2026-03-orders-pool.md#Timeline (UTC)",
+          "checkout-db-connection-runbook.md#Preconditions"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 0.5,
+        "ndcg": 0.6309297535714575
+      },
+      {
+        "id": "q04",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 7.87,
+        "top_rerank_score": null,
+        "top_dense_distance": null,
+        "returned": [
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "checkout-db-connection-runbook.md#Preconditions",
+          "checkout-db-connection-runbook.md#Checkout Service Runbook: Database Connection Failure",
+          "checkout-db-connection-runbook.md#Symptoms",
+          "service-architecture.md#Request flow"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 0.5,
+        "ndcg": 0.6309297535714575
+      },
+      {
+        "id": "q05",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 6.62,
+        "top_rerank_score": null,
+        "top_dense_distance": null,
+        "returned": [
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "oncall-escalation.md#Severity levels",
+          "deployment-process.md#Rollback policy",
+          "checkout-db-connection-runbook.md#Recovery procedure"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.25,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q06",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 7.58,
+        "top_rerank_score": null,
+        "top_dense_distance": null,
+        "returned": [
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "checkout-db-connection-runbook.md#Symptoms",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "checkout-db-connection-runbook.md#Checkout Service Runbook: Database Connection Failure",
+          "checkout-db-connection-runbook.md#Verification"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 0.2,
+        "ndcg": 0.38685280723454163
+      },
+      {
+        "id": "q07",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 7.76,
+        "top_rerank_score": null,
+        "top_dense_distance": null,
+        "returned": [
+          "service-architecture.md#Request flow",
+          "orders-api-runbook.md#OrdersApiHigh5xxRate",
+          "orders-api-runbook.md#Service overview",
+          "service-architecture.md#Dependencies and timeouts",
+          "postmortem-2026-03-orders-pool.md#Postmortem: Orders API connection pool exhaustion (2026-03-12)"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 0.5,
+        "ndcg": 0.6309297535714575
+      },
+      {
+        "id": "q08",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 10.58,
+        "top_rerank_score": null,
+        "top_dense_distance": null,
+        "returned": [
+          "orders-api-runbook.md#OrdersApiHigh5xxRate",
+          "deployment-process.md#Deployment pipeline",
+          "service-architecture.md#Request flow",
+          "postmortem-2026-03-orders-pool.md#Summary",
+          "orders-api-runbook.md#Service overview"
+        ],
+        "forbidden_hit": false,
+        "recall": 0.6666666666666666,
+        "precision": 0.4,
+        "mrr": 1.0,
+        "ndcg": 0.6713860725233041
+      },
+      {
+        "id": "q09",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 7.43,
+        "top_rerank_score": null,
+        "top_dense_distance": null,
+        "returned": [
+          "orders-api-runbook.md#OrdersApiLatencyHigh",
+          "orders-api-runbook.md#Known failure modes",
+          "postmortem-2026-03-orders-pool.md#Summary",
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "postmortem-2026-03-orders-pool.md#Lessons and action items"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.4,
+        "mrr": 1.0,
+        "ndcg": 0.9197207891481876
+      },
+      {
+        "id": "q10",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 9.15,
+        "top_rerank_score": null,
+        "top_dense_distance": null,
+        "returned": [
+          "orders-api-runbook.md#Service overview",
+          "orders-api-runbook.md#Known failure modes",
+          "service-architecture.md#Request flow",
+          "postmortem-2026-03-orders-pool.md#Summary",
+          "postmortem-2026-03-orders-pool.md#Postmortem: Orders API connection pool exhaustion (2026-03-12)"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 0.5,
+        "ndcg": 0.6309297535714575
+      },
+      {
+        "id": "q11",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 8.98,
+        "top_rerank_score": null,
+        "top_dense_distance": null,
+        "returned": [
+          "orders-api-runbook.md#Rolling back",
+          "service-architecture.md#Request flow",
+          "orders-api-runbook.md#OrdersApiHigh5xxRate",
+          "orders-api-runbook.md#Service overview",
+          "service-architecture.md#Dependencies and timeouts"
+        ],
+        "forbidden_hit": false,
+        "recall": 0.5,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 0.6131471927654584
+      },
+      {
+        "id": "q12",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 7.38,
+        "top_rerank_score": null,
+        "top_dense_distance": null,
+        "returned": [
+          "deployment-process.md#Rollback policy",
+          "orders-api-runbook.md#Rolling back",
+          "postmortem-2026-03-orders-pool.md#Timeline (UTC)",
+          "deployment-process.md#Deployment windows",
+          "payment-provider-integration.md#Vendor notes"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.4,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q13",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 7.9,
+        "top_rerank_score": null,
+        "top_dense_distance": null,
+        "returned": [
+          "deployment-process.md#Rollback policy",
+          "orders-api-runbook.md#Rolling back",
+          "postmortem-2026-03-orders-pool.md#Timeline (UTC)",
+          "payment-provider-integration.md#Vendor notes",
+          "checkout-db-connection-runbook.md#If recovery fails"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q14",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 7.7,
+        "top_rerank_score": null,
+        "top_dense_distance": null,
+        "returned": [
+          "deployment-process.md#Deployment windows",
+          "deployment-process.md#Deployment pipeline",
+          "deployment-process.md#Post-deployment verification",
+          "orders-api-runbook.md#OrdersApiHigh5xxRate",
+          "deployment-process.md#Rollback policy"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q15",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 7.15,
+        "top_rerank_score": null,
+        "top_dense_distance": null,
+        "returned": [
+          "deployment-process.md#Deployment pipeline",
+          "deployment-process.md#Post-deployment verification",
+          "deployment-process.md#Deployment windows",
+          "deployment-process.md#Rollback policy",
+          "orders-api-runbook.md#OrdersApiHigh5xxRate"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q16",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 7.85,
+        "top_rerank_score": null,
+        "top_dense_distance": null,
+        "returned": [
+          "deployment-process.md#Deployment pipeline",
+          "deployment-process.md#Post-deployment verification",
+          "deployment-process.md#Deployment windows",
+          "orders-api-runbook.md#OrdersApiHigh5xxRate",
+          "checkout-db-connection-runbook.md#If recovery fails"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 0.5,
+        "ndcg": 0.6309297535714575
+      },
+      {
+        "id": "q17",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 6.94,
+        "top_rerank_score": null,
+        "top_dense_distance": null,
+        "returned": [
+          "service-architecture.md#Dependencies and timeouts",
+          "service-architecture.md#Request flow",
+          "orders-api-runbook.md#Known failure modes",
+          "oncall-escalation.md#Rotations",
+          "service-architecture.md#Services"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q18",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 7.76,
+        "top_rerank_score": null,
+        "top_dense_distance": null,
+        "returned": [
+          "service-architecture.md#Services",
+          "orders-api-runbook.md#Service overview",
+          "checkout-db-connection-runbook.md#Checkout Service Runbook: Database Connection Failure",
+          "postmortem-2026-03-orders-pool.md#Summary",
+          "deployment-process.md#Rollback policy"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q19",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 7.48,
+        "top_rerank_score": null,
+        "top_dense_distance": null,
+        "returned": [
+          "service-architecture.md#Request flow",
+          "orders-api-runbook.md#Service overview",
+          "postmortem-2026-03-orders-pool.md#Summary",
+          "orders-api-runbook.md#Known failure modes",
+          "oncall-escalation.md#Severity levels"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q20",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 6.79,
+        "top_rerank_score": null,
+        "top_dense_distance": null,
+        "returned": [
+          "oncall-escalation.md#Escalation",
+          "oncall-escalation.md#Severity levels",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "oncall-escalation.md#Rotations",
+          "checkout-db-connection-runbook.md#Preconditions"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q21",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 6.88,
+        "top_rerank_score": null,
+        "top_dense_distance": null,
+        "returned": [
+          "oncall-escalation.md#Severity levels",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "deployment-process.md#Rollback policy"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.3333333333333333,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q22",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 7.55,
+        "top_rerank_score": null,
+        "top_dense_distance": null,
+        "returned": [
+          "service-architecture.md#Request flow",
+          "oncall-escalation.md#Rotations",
+          "oncall-escalation.md#Severity levels",
+          "postmortem-2026-03-orders-pool.md#Summary",
+          "oncall-escalation.md#Escalation"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 0.5,
+        "ndcg": 0.6309297535714575
+      },
+      {
+        "id": "q23",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 8.47,
+        "top_rerank_score": null,
+        "top_dense_distance": null,
+        "returned": [
+          "service-architecture.md#Request flow",
+          "postmortem-2026-03-orders-pool.md#Postmortem: Orders API connection pool exhaustion (2026-03-12)",
+          "orders-api-runbook.md#Service overview",
+          "service-architecture.md#Dependencies and timeouts",
+          "orders-api-runbook.md#OrdersApiHigh5xxRate"
+        ],
+        "forbidden_hit": false,
+        "recall": 0.0,
+        "precision": 0.0,
+        "mrr": 0.0,
+        "ndcg": 0.0
+      },
+      {
+        "id": "q24",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 7.88,
+        "top_rerank_score": null,
+        "top_dense_distance": null,
+        "returned": [
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "postmortem-2026-03-orders-pool.md#Postmortem: Orders API connection pool exhaustion (2026-03-12)",
+          "orders-api-runbook.md#Rolling back",
+          "orders-api-runbook.md#OrdersApiHigh5xxRate",
+          "postmortem-2026-03-orders-pool.md#Lessons and action items"
+        ],
+        "forbidden_hit": false,
+        "recall": 0.5,
+        "precision": 0.2,
+        "mrr": 0.2,
+        "ndcg": 0.23719771276929622
+      },
+      {
+        "id": "q25",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 7.55,
+        "top_rerank_score": null,
+        "top_dense_distance": null,
+        "returned": [
+          "payment-provider-integration.md#Failure handling",
+          "payment-provider-integration.md#Payment Provider Integration",
+          "service-architecture.md#Dependencies and timeouts",
+          "oncall-escalation.md#Rotations",
+          "payment-provider-integration.md#Overview"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q26",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 7.11,
+        "top_rerank_score": null,
+        "top_dense_distance": null,
+        "returned": [
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "payment-provider-integration.md#Failure handling",
+          "checkout-db-connection-runbook.md#Symptoms",
+          "service-architecture.md#Dependencies and timeouts",
+          "service-architecture.md#Request flow"
+        ],
+        "forbidden_hit": false,
+        "recall": 0.0,
+        "precision": 0.0,
+        "mrr": 0.0,
+        "ndcg": 0.0
+      },
+      {
+        "id": "u01",
+        "split": "dev",
+        "answerable": false,
+        "latency_ms": 5.88,
+        "top_rerank_score": null,
+        "top_dense_distance": null,
+        "returned": [
+          "oncall-escalation.md#Rotations",
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "checkout-db-connection-runbook.md#Preconditions"
+        ],
+        "forbidden_hit": false
+      },
+      {
+        "id": "u02",
+        "split": "test",
+        "answerable": false,
+        "latency_ms": 7.51,
+        "top_rerank_score": null,
+        "top_dense_distance": null,
+        "returned": [
+          "deployment-process.md#Rollback policy",
+          "orders-api-runbook.md#Service overview",
+          "service-architecture.md#Services",
+          "orders-api-runbook.md#OrdersApiHigh5xxRate",
+          "orders-api-runbook.md#Rolling back"
+        ],
+        "forbidden_hit": false
+      },
+      {
+        "id": "u03",
+        "split": "dev",
+        "answerable": false,
+        "latency_ms": 6.62,
+        "top_rerank_score": null,
+        "top_dense_distance": null,
+        "returned": [
+          "deployment-process.md#Rollback policy",
+          "payment-provider-integration.md#Vendor notes"
+        ],
+        "forbidden_hit": false
+      },
+      {
+        "id": "u04",
+        "split": "test",
+        "answerable": false,
+        "latency_ms": 6.39,
+        "top_rerank_score": null,
+        "top_dense_distance": null,
+        "returned": [
+          "orders-api-runbook.md#OrdersApiHigh5xxRate"
+        ],
+        "forbidden_hit": false
+      },
+      {
+        "id": "u05",
+        "split": "dev",
+        "answerable": false,
+        "latency_ms": 6.79,
+        "top_rerank_score": null,
+        "top_dense_distance": null,
+        "returned": [
+          "orders-api-runbook.md#Service overview",
+          "service-architecture.md#Services",
+          "deployment-process.md#Rollback policy",
+          "checkout-db-connection-runbook.md#Checkout Service Runbook: Database Connection Failure",
+          "service-architecture.md#Observability"
+        ],
+        "forbidden_hit": false
+      },
+      {
+        "id": "u06",
+        "split": "test",
+        "answerable": false,
+        "latency_ms": 6.52,
+        "top_rerank_score": null,
+        "top_dense_distance": null,
+        "returned": [
+          "payment-provider-integration.md#Payment Provider Integration",
+          "payment-provider-integration.md#Failure handling",
+          "payment-provider-integration.md#Overview",
+          "oncall-escalation.md#Rotations",
+          "service-architecture.md#Dependencies and timeouts"
+        ],
+        "forbidden_hit": false
+      },
+      {
+        "id": "p01",
+        "split": "test",
+        "answerable": false,
+        "latency_ms": 6.15,
+        "top_rerank_score": null,
+        "top_dense_distance": null,
+        "returned": [
+          "checkout-db-connection-runbook.md#Checkout Service Runbook: Database Connection Failure",
+          "checkout-db-connection-runbook.md#Preconditions",
+          "orders-api-runbook.md#Service overview",
+          "orders-api-runbook.md#Known failure modes",
+          "checkout-db-connection-runbook.md#If recovery fails"
+        ],
+        "forbidden_hit": false
+      },
+      {
+        "id": "p02",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 7.23,
+        "top_rerank_score": null,
+        "top_dense_distance": null,
+        "returned": [
+          "database-credentials-rotation.md#Procedure",
+          "database-credentials-rotation.md#Database Credential Rotation (Restricted: SRE only)",
+          "checkout-db-connection-runbook.md#Checkout Service Runbook: Database Connection Failure",
+          "checkout-db-connection-runbook.md#Preconditions",
+          "orders-api-runbook.md#Service overview"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "i01",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 7.52,
+        "top_rerank_score": null,
+        "top_dense_distance": null,
+        "returned": [
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "payment-provider-integration.md#Failure handling",
+          "payment-provider-integration.md#Payment Provider Integration",
+          "checkout-db-connection-runbook.md#Checkout Service Runbook: Database Connection Failure",
+          "oncall-escalation.md#Rotations"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 0.5,
+        "ndcg": 0.6309297535714575
+      }
+    ],
+    "hybrid_rrf": [
+      {
+        "id": "q01",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 21.13,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.17742908000946045,
+        "returned": [
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "checkout-db-connection-runbook.md#Checkout Service Runbook: Database Connection Failure",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "orders-api-runbook.md#Known failure modes",
+          "checkout-db-connection-runbook.md#Preconditions"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q02",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 17.35,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.15823516721234188,
+        "returned": [
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "checkout-db-connection-runbook.md#Checkout Service Runbook: Database Connection Failure",
+          "checkout-db-connection-runbook.md#Symptoms",
+          "postmortem-2026-03-orders-pool.md#Summary"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q03",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 16.03,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.2550776752875836,
+        "returned": [
+          "checkout-db-connection-runbook.md#Symptoms",
+          "checkout-db-connection-runbook.md#Checkout Service Runbook: Database Connection Failure",
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "checkout-db-connection-runbook.md#Preconditions",
+          "checkout-db-connection-runbook.md#If recovery fails"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q04",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 22.45,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.218400239944458,
+        "returned": [
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "checkout-db-connection-runbook.md#Checkout Service Runbook: Database Connection Failure",
+          "checkout-db-connection-runbook.md#Preconditions",
+          "checkout-db-connection-runbook.md#Symptoms",
+          "checkout-db-connection-runbook.md#If recovery fails"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 0.3333333333333333,
+        "ndcg": 0.5
+      },
+      {
+        "id": "q05",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 16.32,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.23491308272920508,
+        "returned": [
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "oncall-escalation.md#Severity levels",
+          "deployment-process.md#Rollback policy",
+          "postmortem-2026-03-orders-pool.md#Summary"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q06",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 14.94,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.3044714331626892,
+        "returned": [
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "checkout-db-connection-runbook.md#Verification",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "checkout-db-connection-runbook.md#Symptoms",
+          "payment-provider-integration.md#Failure handling"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 0.5,
+        "ndcg": 0.6309297535714575
+      },
+      {
+        "id": "q07",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 15.49,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.13787490129470825,
+        "returned": [
+          "orders-api-runbook.md#OrdersApiHigh5xxRate",
+          "orders-api-runbook.md#Service overview",
+          "orders-api-runbook.md#Rolling back",
+          "postmortem-2026-03-orders-pool.md#Timeline (UTC)",
+          "service-architecture.md#Dependencies and timeouts"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q08",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 14.93,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.20885679616250474,
+        "returned": [
+          "orders-api-runbook.md#OrdersApiHigh5xxRate",
+          "postmortem-2026-03-orders-pool.md#Summary",
+          "orders-api-runbook.md#Known failure modes",
+          "orders-api-runbook.md#Service overview",
+          "orders-api-runbook.md#Rolling back"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.6,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q09",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 14.62,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.23969221115112305,
+        "returned": [
+          "postmortem-2026-03-orders-pool.md#Summary",
+          "orders-api-runbook.md#Known failure modes",
+          "orders-api-runbook.md#OrdersApiLatencyHigh",
+          "postmortem-2026-03-orders-pool.md#Lessons and action items",
+          "checkout-db-connection-runbook.md#Recovery procedure"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.4,
+        "mrr": 1.0,
+        "ndcg": 0.9197207891481876
+      },
+      {
+        "id": "q10",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 13.98,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.21116364002227783,
+        "returned": [
+          "orders-api-runbook.md#Known failure modes",
+          "postmortem-2026-03-orders-pool.md#Summary",
+          "orders-api-runbook.md#Service overview",
+          "postmortem-2026-03-orders-pool.md#Root cause",
+          "service-architecture.md#Dependencies and timeouts"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q11",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 19.18,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.15244263410567638,
+        "returned": [
+          "orders-api-runbook.md#Rolling back",
+          "orders-api-runbook.md#Service overview",
+          "service-architecture.md#Dependencies and timeouts",
+          "orders-api-runbook.md#OrdersApiHigh5xxRate",
+          "deployment-process.md#Rollback policy"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.4,
+        "mrr": 1.0,
+        "ndcg": 0.8503449055347546
+      },
+      {
+        "id": "q12",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 15.25,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.2008255124092102,
+        "returned": [
+          "deployment-process.md#Rollback policy",
+          "orders-api-runbook.md#Rolling back",
+          "deployment-process.md#Deployment windows",
+          "deployment-process.md#Post-deployment verification",
+          "payment-provider-integration.md#Vendor notes"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.4,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q13",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 15.04,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.21602926063188221,
+        "returned": [
+          "deployment-process.md#Rollback policy",
+          "orders-api-runbook.md#Rolling back",
+          "payment-provider-integration.md#Vendor notes",
+          "deployment-process.md#Deployment windows",
+          "deployment-process.md#Deployment pipeline"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q14",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 15.33,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.20917758832245015,
+        "returned": [
+          "deployment-process.md#Deployment windows",
+          "deployment-process.md#Deployment pipeline",
+          "deployment-process.md#Post-deployment verification",
+          "deployment-process.md#Rollback policy",
+          "orders-api-runbook.md#OrdersApiHigh5xxRate"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q15",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 15.51,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.1902588975120848,
+        "returned": [
+          "deployment-process.md#Deployment pipeline",
+          "deployment-process.md#Post-deployment verification",
+          "deployment-process.md#Deployment windows",
+          "deployment-process.md#Rollback policy",
+          "orders-api-runbook.md#Rolling back"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q16",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 14.06,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.22002395033407962,
+        "returned": [
+          "deployment-process.md#Post-deployment verification",
+          "deployment-process.md#Deployment pipeline",
+          "deployment-process.md#Deployment windows",
+          "orders-api-runbook.md#OrdersApiHigh5xxRate",
+          "deployment-process.md#Rollback policy"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q17",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 20.92,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.19240920588915167,
+        "returned": [
+          "service-architecture.md#Dependencies and timeouts",
+          "orders-api-runbook.md#Known failure modes",
+          "service-architecture.md#Request flow",
+          "orders-api-runbook.md#Service overview",
+          "postmortem-2026-03-orders-pool.md#Summary"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q18",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 25.63,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.28597470689120896,
+        "returned": [
+          "service-architecture.md#Services",
+          "orders-api-runbook.md#Service overview",
+          "checkout-db-connection-runbook.md#Checkout Service Runbook: Database Connection Failure",
+          "postmortem-2026-03-orders-pool.md#Summary",
+          "orders-api-runbook.md#Orders API Runbook"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q19",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 44.99,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.1605436110172489,
+        "returned": [
+          "service-architecture.md#Request flow",
+          "orders-api-runbook.md#Service overview",
+          "postmortem-2026-03-orders-pool.md#Summary",
+          "orders-api-runbook.md#Known failure modes",
+          "service-architecture.md#Dependencies and timeouts"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q20",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 30.03,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.1448629153101646,
+        "returned": [
+          "oncall-escalation.md#Escalation",
+          "oncall-escalation.md#Severity levels",
+          "oncall-escalation.md#Rotations",
+          "postmortem-2026-03-orders-pool.md#Timeline (UTC)",
+          "orders-api-runbook.md#Rolling back"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q21",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 25.99,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.30902886390686035,
+        "returned": [
+          "oncall-escalation.md#Severity levels",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "deployment-process.md#Rollback policy",
+          "postmortem-2026-03-orders-pool.md#Postmortem: Orders API connection pool exhaustion (2026-03-12)",
+          "postmortem-2026-03-orders-pool.md#Timeline (UTC)"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q22",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 17.63,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.33948723438458117,
+        "returned": [
+          "service-architecture.md#Request flow",
+          "oncall-escalation.md#Rotations",
+          "service-architecture.md#Dependencies and timeouts",
+          "payment-provider-integration.md#Overview",
+          "postmortem-2026-03-orders-pool.md#Summary"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 0.5,
+        "ndcg": 0.6309297535714575
+      },
+      {
+        "id": "q23",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 17.88,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.30641210079193115,
+        "returned": [
+          "orders-api-runbook.md#OrdersApiHigh5xxRate",
+          "orders-api-runbook.md#Service overview",
+          "postmortem-2026-03-orders-pool.md#Postmortem: Orders API connection pool exhaustion (2026-03-12)",
+          "orders-api-runbook.md#Known failure modes",
+          "service-architecture.md#Request flow"
+        ],
+        "forbidden_hit": false,
+        "recall": 0.0,
+        "precision": 0.0,
+        "mrr": 0.0,
+        "ndcg": 0.0
+      },
+      {
+        "id": "q24",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 15.47,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.26215438472303254,
+        "returned": [
+          "postmortem-2026-03-orders-pool.md#Postmortem: Orders API connection pool exhaustion (2026-03-12)",
+          "postmortem-2026-03-orders-pool.md#Lessons and action items",
+          "orders-api-runbook.md#Rolling back",
+          "postmortem-2026-03-orders-pool.md#Summary",
+          "checkout-db-connection-runbook.md#Recovery procedure"
+        ],
+        "forbidden_hit": false,
+        "recall": 0.5,
+        "precision": 0.2,
+        "mrr": 0.5,
+        "ndcg": 0.38685280723454163
+      },
+      {
+        "id": "q25",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 19.2,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.21145143645422892,
+        "returned": [
+          "payment-provider-integration.md#Failure handling",
+          "payment-provider-integration.md#Payment Provider Integration",
+          "service-architecture.md#Dependencies and timeouts",
+          "payment-provider-integration.md#Vendor notes",
+          "oncall-escalation.md#Rotations"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q26",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 19.2,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.31205403804778564,
+        "returned": [
+          "payment-provider-integration.md#Failure handling",
+          "service-architecture.md#Dependencies and timeouts",
+          "payment-provider-integration.md#Idempotency",
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "service-architecture.md#Request flow"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 0.3333333333333333,
+        "ndcg": 0.5
+      },
+      {
+        "id": "u01",
+        "split": "dev",
+        "answerable": false,
+        "latency_ms": 16.59,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.4432706832885742,
+        "returned": [
+          "oncall-escalation.md#Rotations",
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "checkout-db-connection-runbook.md#Preconditions",
+          "payment-provider-integration.md#Vendor notes",
+          "deployment-process.md#Deployment pipeline"
+        ],
+        "forbidden_hit": false
+      },
+      {
+        "id": "u02",
+        "split": "test",
+        "answerable": false,
+        "latency_ms": 16.61,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.4268827438354492,
+        "returned": [
+          "orders-api-runbook.md#OrdersApiHigh5xxRate",
+          "service-architecture.md#Observability",
+          "orders-api-runbook.md#Rolling back",
+          "deployment-process.md#Post-deployment verification",
+          "orders-api-runbook.md#Service overview"
+        ],
+        "forbidden_hit": false
+      },
+      {
+        "id": "u03",
+        "split": "dev",
+        "answerable": false,
+        "latency_ms": 15.45,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.500859916107661,
+        "returned": [
+          "deployment-process.md#Rollback policy",
+          "payment-provider-integration.md#Vendor notes",
+          "oncall-escalation.md#Rotations",
+          "orders-api-runbook.md#OrdersApiLatencyHigh",
+          "oncall-escalation.md#Escalation"
+        ],
+        "forbidden_hit": false
+      },
+      {
+        "id": "u04",
+        "split": "test",
+        "answerable": false,
+        "latency_ms": 15.84,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.47099835026283476,
+        "returned": [
+          "orders-api-runbook.md#OrdersApiHigh5xxRate",
+          "orders-api-runbook.md#Rolling back",
+          "payment-provider-integration.md#Vendor notes",
+          "postmortem-2026-03-orders-pool.md#Root cause",
+          "checkout-db-connection-runbook.md#Recovery procedure"
+        ],
+        "forbidden_hit": false
+      },
+      {
+        "id": "u05",
+        "split": "dev",
+        "answerable": false,
+        "latency_ms": 15.25,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.44338030297990605,
+        "returned": [
+          "service-architecture.md#Services",
+          "orders-api-runbook.md#Service overview",
+          "service-architecture.md#Observability",
+          "checkout-db-connection-runbook.md#Checkout Service Runbook: Database Connection Failure",
+          "service-architecture.md#Request flow"
+        ],
+        "forbidden_hit": false
+      },
+      {
+        "id": "u06",
+        "split": "test",
+        "answerable": false,
+        "latency_ms": 15.08,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.4489313692491421,
+        "returned": [
+          "payment-provider-integration.md#Payment Provider Integration",
+          "payment-provider-integration.md#Vendor notes",
+          "payment-provider-integration.md#Failure handling",
+          "payment-provider-integration.md#Overview",
+          "service-architecture.md#Dependencies and timeouts"
+        ],
+        "forbidden_hit": false
+      },
+      {
+        "id": "p01",
+        "split": "test",
+        "answerable": false,
+        "latency_ms": 15.68,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.39795602584408973,
+        "returned": [
+          "checkout-db-connection-runbook.md#Checkout Service Runbook: Database Connection Failure",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "checkout-db-connection-runbook.md#Preconditions",
+          "postmortem-2026-03-orders-pool.md#Lessons and action items",
+          "orders-api-runbook.md#Known failure modes"
+        ],
+        "forbidden_hit": false
+      },
+      {
+        "id": "p02",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 20.03,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.2935704413908444,
+        "returned": [
+          "database-credentials-rotation.md#Procedure",
+          "checkout-db-connection-runbook.md#Checkout Service Runbook: Database Connection Failure",
+          "database-credentials-rotation.md#Database Credential Rotation (Restricted: SRE only)",
+          "database-credentials-rotation.md#Schedule",
+          "checkout-db-connection-runbook.md#If recovery fails"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "i01",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 14.63,
+        "top_rerank_score": null,
+        "top_dense_distance": 0.1737162574360509,
+        "returned": [
+          "payment-provider-integration.md#Failure handling",
+          "checkout-db-connection-runbook.md#Checkout Service Runbook: Database Connection Failure",
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "service-architecture.md#Dependencies and timeouts",
+          "payment-provider-integration.md#Payment Provider Integration"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      }
+    ],
+    "dense+rerank": [
+      {
+        "id": "q01",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 306.7,
+        "top_rerank_score": 6.653403282165527,
+        "top_dense_distance": 0.17742908000946045,
+        "returned": [
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "checkout-db-connection-runbook.md#Preconditions",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "checkout-db-connection-runbook.md#Verification",
+          "checkout-db-connection-runbook.md#Symptoms"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q02",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 281.95,
+        "top_rerank_score": 8.512102127075195,
+        "top_dense_distance": 0.15823516721234188,
+        "returned": [
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "checkout-db-connection-runbook.md#Preconditions",
+          "checkout-db-connection-runbook.md#Verification",
+          "checkout-db-connection-runbook.md#Symptoms"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q03",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 291.21,
+        "top_rerank_score": 6.30135440826416,
+        "top_dense_distance": 0.2550776752875836,
+        "returned": [
+          "checkout-db-connection-runbook.md#Symptoms",
+          "checkout-db-connection-runbook.md#Preconditions",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "checkout-db-connection-runbook.md#Verification",
+          "checkout-db-connection-runbook.md#Checkout Service Runbook: Database Connection Failure"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q04",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 286.41,
+        "top_rerank_score": 7.1003947257995605,
+        "top_dense_distance": 0.25110086785544006,
+        "returned": [
+          "checkout-db-connection-runbook.md#Preconditions",
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "checkout-db-connection-runbook.md#Verification",
+          "checkout-db-connection-runbook.md#Symptoms"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q05",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 337.82,
+        "top_rerank_score": 4.70187520980835,
+        "top_dense_distance": 0.23491308272920508,
+        "returned": [
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "checkout-db-connection-runbook.md#Symptoms",
+          "oncall-escalation.md#Severity levels",
+          "postmortem-2026-03-orders-pool.md#Summary"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q06",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 286.53,
+        "top_rerank_score": 3.6968963146209717,
+        "top_dense_distance": 0.35004234313964844,
+        "returned": [
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "checkout-db-connection-runbook.md#Verification",
+          "checkout-db-connection-runbook.md#Preconditions",
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "payment-provider-integration.md#Failure handling"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 0.5,
+        "ndcg": 0.6309297535714575
+      },
+      {
+        "id": "q07",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 300.09,
+        "top_rerank_score": 7.888293743133545,
+        "top_dense_distance": 0.13787490129470825,
+        "returned": [
+          "orders-api-runbook.md#OrdersApiHigh5xxRate",
+          "orders-api-runbook.md#Rolling back",
+          "orders-api-runbook.md#OrdersApiLatencyHigh",
+          "postmortem-2026-03-orders-pool.md#Timeline (UTC)",
+          "deployment-process.md#Post-deployment verification"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q08",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 307.69,
+        "top_rerank_score": 4.644525527954102,
+        "top_dense_distance": 0.20885679616250474,
+        "returned": [
+          "orders-api-runbook.md#OrdersApiHigh5xxRate",
+          "postmortem-2026-03-orders-pool.md#Summary",
+          "orders-api-runbook.md#Known failure modes",
+          "postmortem-2026-03-orders-pool.md#Lessons and action items",
+          "postmortem-2026-03-orders-pool.md#Timeline (UTC)"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.6,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q09",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 300.44,
+        "top_rerank_score": 6.17013692855835,
+        "top_dense_distance": 0.2583957314491272,
+        "returned": [
+          "orders-api-runbook.md#OrdersApiLatencyHigh",
+          "postmortem-2026-03-orders-pool.md#Lessons and action items",
+          "postmortem-2026-03-orders-pool.md#Summary",
+          "orders-api-runbook.md#Known failure modes",
+          "postmortem-2026-03-orders-pool.md#Root cause"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.4,
+        "mrr": 1.0,
+        "ndcg": 0.9197207891481876
+      },
+      {
+        "id": "q10",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 301.11,
+        "top_rerank_score": 4.603711128234863,
+        "top_dense_distance": 0.2277284128827789,
+        "returned": [
+          "postmortem-2026-03-orders-pool.md#Root cause",
+          "orders-api-runbook.md#Known failure modes",
+          "postmortem-2026-03-orders-pool.md#Summary",
+          "postmortem-2026-03-orders-pool.md#Lessons and action items",
+          "checkout-db-connection-runbook.md#Symptoms"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 0.5,
+        "ndcg": 0.6309297535714575
+      },
+      {
+        "id": "q11",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 303.63,
+        "top_rerank_score": 7.82966423034668,
+        "top_dense_distance": 0.15244263410567638,
+        "returned": [
+          "orders-api-runbook.md#Rolling back",
+          "postmortem-2026-03-orders-pool.md#Lessons and action items",
+          "orders-api-runbook.md#OrdersApiHigh5xxRate",
+          "postmortem-2026-03-orders-pool.md#Timeline (UTC)",
+          "orders-api-runbook.md#Service overview"
+        ],
+        "forbidden_hit": false,
+        "recall": 0.5,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 0.6131471927654584
+      },
+      {
+        "id": "q12",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 291.01,
+        "top_rerank_score": 6.292825222015381,
+        "top_dense_distance": 0.2008255124092102,
+        "returned": [
+          "deployment-process.md#Rollback policy",
+          "orders-api-runbook.md#Rolling back",
+          "deployment-process.md#Deployment windows",
+          "deployment-process.md#Post-deployment verification",
+          "payment-provider-integration.md#Vendor notes"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.4,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q13",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 303.95,
+        "top_rerank_score": 6.382999420166016,
+        "top_dense_distance": 0.21602926063188221,
+        "returned": [
+          "deployment-process.md#Rollback policy",
+          "orders-api-runbook.md#Rolling back",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "deployment-process.md#Post-deployment verification",
+          "deployment-process.md#Deployment windows"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q14",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 328.51,
+        "top_rerank_score": 9.554512977600098,
+        "top_dense_distance": 0.20917758832245015,
+        "returned": [
+          "deployment-process.md#Deployment windows",
+          "orders-api-runbook.md#Orders API Runbook",
+          "deployment-process.md#Deployment pipeline",
+          "deployment-process.md#Post-deployment verification",
+          "deployment-process.md#Rollback policy"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q15",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 367.57,
+        "top_rerank_score": 7.598677635192871,
+        "top_dense_distance": 0.1902588975120848,
+        "returned": [
+          "deployment-process.md#Deployment pipeline",
+          "deployment-process.md#Post-deployment verification",
+          "orders-api-runbook.md#Rolling back",
+          "deployment-process.md#Deployment windows",
+          "deployment-process.md#Rollback policy"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q16",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 351.0,
+        "top_rerank_score": 7.312443256378174,
+        "top_dense_distance": 0.22002395033407962,
+        "returned": [
+          "deployment-process.md#Post-deployment verification",
+          "checkout-db-connection-runbook.md#Verification",
+          "orders-api-runbook.md#OrdersApiHigh5xxRate",
+          "deployment-process.md#Deployment windows",
+          "deployment-process.md#Rollback policy"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q17",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 363.08,
+        "top_rerank_score": 6.824108123779297,
+        "top_dense_distance": 0.19240920588915167,
+        "returned": [
+          "service-architecture.md#Dependencies and timeouts",
+          "orders-api-runbook.md#Known failure modes",
+          "service-architecture.md#Request flow",
+          "orders-api-runbook.md#Service overview",
+          "postmortem-2026-03-orders-pool.md#Summary"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q18",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 340.07,
+        "top_rerank_score": 0.34052813053131104,
+        "top_dense_distance": 0.28597470689120896,
+        "returned": [
+          "service-architecture.md#Services",
+          "orders-api-runbook.md#Service overview",
+          "orders-api-runbook.md#Orders API Runbook",
+          "service-architecture.md#Request flow",
+          "postmortem-2026-03-orders-pool.md#Summary"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q19",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 335.16,
+        "top_rerank_score": 6.0891313552856445,
+        "top_dense_distance": 0.1605436110172489,
+        "returned": [
+          "service-architecture.md#Request flow",
+          "oncall-escalation.md#Severity levels",
+          "orders-api-runbook.md#Service overview",
+          "postmortem-2026-03-orders-pool.md#Summary",
+          "orders-api-runbook.md#Known failure modes"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q20",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 406.9,
+        "top_rerank_score": 7.637388229370117,
+        "top_dense_distance": 0.1448629153101646,
+        "returned": [
+          "oncall-escalation.md#Escalation",
+          "oncall-escalation.md#Severity levels",
+          "oncall-escalation.md#Rotations",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "orders-api-runbook.md#Rolling back"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q21",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 315.83,
+        "top_rerank_score": -0.07977444678544998,
+        "top_dense_distance": 0.30902886390686035,
+        "returned": [
+          "oncall-escalation.md#Severity levels",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "postmortem-2026-03-orders-pool.md#Postmortem: Orders API connection pool exhaustion (2026-03-12)",
+          "deployment-process.md#Rollback policy",
+          "postmortem-2026-03-orders-pool.md#Root cause"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q22",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 369.78,
+        "top_rerank_score": 4.693469047546387,
+        "top_dense_distance": 0.33948723438458117,
+        "returned": [
+          "service-architecture.md#Request flow",
+          "oncall-escalation.md#Rotations",
+          "payment-provider-integration.md#Overview",
+          "service-architecture.md#Dependencies and timeouts",
+          "checkout-db-connection-runbook.md#If recovery fails"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 0.5,
+        "ndcg": 0.6309297535714575
+      },
+      {
+        "id": "q23",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 337.69,
+        "top_rerank_score": 4.11322546005249,
+        "top_dense_distance": 0.3214506315320341,
+        "returned": [
+          "postmortem-2026-03-orders-pool.md#Root cause",
+          "postmortem-2026-03-orders-pool.md#Summary",
+          "orders-api-runbook.md#OrdersApiHigh5xxRate",
+          "orders-api-runbook.md#OrdersApiLatencyHigh",
+          "postmortem-2026-03-orders-pool.md#Postmortem: Orders API connection pool exhaustion (2026-03-12)"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.4,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q24",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 359.91,
+        "top_rerank_score": 7.247631072998047,
+        "top_dense_distance": 0.2168790777017885,
+        "returned": [
+          "postmortem-2026-03-orders-pool.md#Lessons and action items",
+          "postmortem-2026-03-orders-pool.md#Postmortem: Orders API connection pool exhaustion (2026-03-12)",
+          "postmortem-2026-03-orders-pool.md#Summary",
+          "postmortem-2026-03-orders-pool.md#Timeline (UTC)",
+          "orders-api-runbook.md#Known failure modes"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.4,
+        "mrr": 1.0,
+        "ndcg": 0.8772153153380493
+      },
+      {
+        "id": "q25",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 365.27,
+        "top_rerank_score": 8.423652648925781,
+        "top_dense_distance": 0.21145143645422892,
+        "returned": [
+          "payment-provider-integration.md#Failure handling",
+          "payment-provider-integration.md#Idempotency",
+          "payment-provider-integration.md#Payment Provider Integration",
+          "payment-provider-integration.md#Vendor notes",
+          "payment-provider-integration.md#Overview"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q26",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 368.13,
+        "top_rerank_score": 2.639976739883423,
+        "top_dense_distance": 0.28419492934972346,
+        "returned": [
+          "payment-provider-integration.md#Idempotency",
+          "service-architecture.md#Dependencies and timeouts",
+          "payment-provider-integration.md#Overview",
+          "payment-provider-integration.md#Failure handling",
+          "checkout-db-connection-runbook.md#Recovery procedure"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "u01",
+        "split": "dev",
+        "answerable": false,
+        "latency_ms": 393.62,
+        "top_rerank_score": -8.861205101013184,
+        "top_dense_distance": 0.4432706832885742,
+        "returned": [
+          "oncall-escalation.md#Rotations",
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "deployment-process.md#Post-deployment verification",
+          "payment-provider-integration.md#Failure handling",
+          "postmortem-2026-03-orders-pool.md#Root cause"
+        ],
+        "forbidden_hit": false
+      },
+      {
+        "id": "u02",
+        "split": "test",
+        "answerable": false,
+        "latency_ms": 393.03,
+        "top_rerank_score": -10.875032424926758,
+        "top_dense_distance": 0.4268827438354492,
+        "returned": [
+          "orders-api-runbook.md#OrdersApiHigh5xxRate",
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "payment-provider-integration.md#Failure handling",
+          "service-architecture.md#Dependencies and timeouts",
+          "deployment-process.md#Post-deployment verification"
+        ],
+        "forbidden_hit": false
+      },
+      {
+        "id": "u03",
+        "split": "dev",
+        "answerable": false,
+        "latency_ms": 253.37,
+        "top_rerank_score": -10.981989860534668,
+        "top_dense_distance": 0.4345690686024305,
+        "returned": [
+          "oncall-escalation.md#Rotations",
+          "oncall-escalation.md#Escalation",
+          "oncall-escalation.md#Severity levels",
+          "deployment-process.md#Rollback policy",
+          "deployment-process.md#Deployment pipeline"
+        ],
+        "forbidden_hit": false
+      },
+      {
+        "id": "u04",
+        "split": "test",
+        "answerable": false,
+        "latency_ms": 321.27,
+        "top_rerank_score": -11.016376495361328,
+        "top_dense_distance": 0.4577885916485043,
+        "returned": [
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "orders-api-runbook.md#OrdersApiHigh5xxRate",
+          "checkout-db-connection-runbook.md#Preconditions",
+          "payment-provider-integration.md#Failure handling",
+          "checkout-db-connection-runbook.md#If recovery fails"
+        ],
+        "forbidden_hit": false
+      },
+      {
+        "id": "u05",
+        "split": "dev",
+        "answerable": false,
+        "latency_ms": 361.78,
+        "top_rerank_score": -10.334689140319824,
+        "top_dense_distance": 0.4791788769257729,
+        "returned": [
+          "service-architecture.md#Request flow",
+          "service-architecture.md#Observability",
+          "orders-api-runbook.md#Service overview",
+          "payment-provider-integration.md#Idempotency",
+          "payment-provider-integration.md#Payment Provider Integration"
+        ],
+        "forbidden_hit": false
+      },
+      {
+        "id": "u06",
+        "split": "test",
+        "answerable": false,
+        "latency_ms": 377.02,
+        "top_rerank_score": -11.107828140258789,
+        "top_dense_distance": 0.48092424869536987,
+        "returned": [
+          "payment-provider-integration.md#Failure handling",
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "payment-provider-integration.md#Payment Provider Integration",
+          "payment-provider-integration.md#Idempotency",
+          "deployment-process.md#Deployment pipeline"
+        ],
+        "forbidden_hit": false
+      },
+      {
+        "id": "p01",
+        "split": "test",
+        "answerable": false,
+        "latency_ms": 349.6,
+        "top_rerank_score": -10.472070693969727,
+        "top_dense_distance": 0.39795602584408973,
+        "returned": [
+          "checkout-db-connection-runbook.md#Checkout Service Runbook: Database Connection Failure",
+          "checkout-db-connection-runbook.md#Preconditions",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "postmortem-2026-03-orders-pool.md#Root cause",
+          "checkout-db-connection-runbook.md#Verification"
+        ],
+        "forbidden_hit": false
+      },
+      {
+        "id": "p02",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 351.53,
+        "top_rerank_score": 4.994695663452148,
+        "top_dense_distance": 0.2935704413908444,
+        "returned": [
+          "database-credentials-rotation.md#Procedure",
+          "checkout-db-connection-runbook.md#Checkout Service Runbook: Database Connection Failure",
+          "checkout-db-connection-runbook.md#Preconditions",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "database-credentials-rotation.md#Database Credential Rotation (Restricted: SRE only)"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "i01",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 415.21,
+        "top_rerank_score": 6.178870677947998,
+        "top_dense_distance": 0.1737162574360509,
+        "returned": [
+          "payment-provider-integration.md#Failure handling",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "checkout-db-connection-runbook.md#Checkout Service Runbook: Database Connection Failure",
+          "payment-provider-integration.md#Overview"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      }
+    ],
+    "hybrid_rrf+rerank": [
+      {
+        "id": "q01",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 406.61,
+        "top_rerank_score": 6.653403282165527,
+        "top_dense_distance": 0.17742908000946045,
+        "returned": [
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "checkout-db-connection-runbook.md#Preconditions",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "checkout-db-connection-runbook.md#Verification",
+          "checkout-db-connection-runbook.md#Symptoms"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q02",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 366.86,
+        "top_rerank_score": 8.512102127075195,
+        "top_dense_distance": 0.15823516721234188,
+        "returned": [
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "checkout-db-connection-runbook.md#Preconditions",
+          "checkout-db-connection-runbook.md#Verification",
+          "checkout-db-connection-runbook.md#Symptoms"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q03",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 334.28,
+        "top_rerank_score": 6.30135440826416,
+        "top_dense_distance": 0.2550776752875836,
+        "returned": [
+          "checkout-db-connection-runbook.md#Symptoms",
+          "checkout-db-connection-runbook.md#Preconditions",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "checkout-db-connection-runbook.md#Verification",
+          "checkout-db-connection-runbook.md#Checkout Service Runbook: Database Connection Failure"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q04",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 332.65,
+        "top_rerank_score": 7.1003947257995605,
+        "top_dense_distance": 0.25110086785544006,
+        "returned": [
+          "checkout-db-connection-runbook.md#Preconditions",
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "checkout-db-connection-runbook.md#Verification",
+          "checkout-db-connection-runbook.md#Symptoms"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q05",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 350.84,
+        "top_rerank_score": 4.70187520980835,
+        "top_dense_distance": 0.23491308272920508,
+        "returned": [
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "checkout-db-connection-runbook.md#Symptoms",
+          "oncall-escalation.md#Severity levels",
+          "postmortem-2026-03-orders-pool.md#Summary"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q06",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 372.88,
+        "top_rerank_score": 3.6968963146209717,
+        "top_dense_distance": 0.35004234313964844,
+        "returned": [
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "checkout-db-connection-runbook.md#Verification",
+          "checkout-db-connection-runbook.md#Preconditions",
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "payment-provider-integration.md#Failure handling"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 0.5,
+        "ndcg": 0.6309297535714575
+      },
+      {
+        "id": "q07",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 347.53,
+        "top_rerank_score": 7.888293743133545,
+        "top_dense_distance": 0.13787490129470825,
+        "returned": [
+          "orders-api-runbook.md#OrdersApiHigh5xxRate",
+          "orders-api-runbook.md#Rolling back",
+          "orders-api-runbook.md#OrdersApiLatencyHigh",
+          "postmortem-2026-03-orders-pool.md#Timeline (UTC)",
+          "deployment-process.md#Post-deployment verification"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q08",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 370.38,
+        "top_rerank_score": 4.644525527954102,
+        "top_dense_distance": 0.20885679616250474,
+        "returned": [
+          "orders-api-runbook.md#OrdersApiHigh5xxRate",
+          "postmortem-2026-03-orders-pool.md#Summary",
+          "orders-api-runbook.md#Known failure modes",
+          "postmortem-2026-03-orders-pool.md#Lessons and action items",
+          "postmortem-2026-03-orders-pool.md#Timeline (UTC)"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.6,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q09",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 338.69,
+        "top_rerank_score": 6.17013692855835,
+        "top_dense_distance": 0.2583957314491272,
+        "returned": [
+          "orders-api-runbook.md#OrdersApiLatencyHigh",
+          "postmortem-2026-03-orders-pool.md#Lessons and action items",
+          "postmortem-2026-03-orders-pool.md#Summary",
+          "orders-api-runbook.md#Known failure modes",
+          "postmortem-2026-03-orders-pool.md#Root cause"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.4,
+        "mrr": 1.0,
+        "ndcg": 0.9197207891481876
+      },
+      {
+        "id": "q10",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 413.87,
+        "top_rerank_score": 4.603711128234863,
+        "top_dense_distance": 0.2277284128827789,
+        "returned": [
+          "postmortem-2026-03-orders-pool.md#Root cause",
+          "orders-api-runbook.md#Known failure modes",
+          "postmortem-2026-03-orders-pool.md#Summary",
+          "postmortem-2026-03-orders-pool.md#Lessons and action items",
+          "checkout-db-connection-runbook.md#Symptoms"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 0.5,
+        "ndcg": 0.6309297535714575
+      },
+      {
+        "id": "q11",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 372.21,
+        "top_rerank_score": 7.82966423034668,
+        "top_dense_distance": 0.15244263410567638,
+        "returned": [
+          "orders-api-runbook.md#Rolling back",
+          "postmortem-2026-03-orders-pool.md#Lessons and action items",
+          "orders-api-runbook.md#OrdersApiHigh5xxRate",
+          "postmortem-2026-03-orders-pool.md#Timeline (UTC)",
+          "orders-api-runbook.md#Service overview"
+        ],
+        "forbidden_hit": false,
+        "recall": 0.5,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 0.6131471927654584
+      },
+      {
+        "id": "q12",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 357.59,
+        "top_rerank_score": 6.292825222015381,
+        "top_dense_distance": 0.2008255124092102,
+        "returned": [
+          "deployment-process.md#Rollback policy",
+          "orders-api-runbook.md#Rolling back",
+          "deployment-process.md#Deployment windows",
+          "deployment-process.md#Post-deployment verification",
+          "payment-provider-integration.md#Vendor notes"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.4,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q13",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 376.19,
+        "top_rerank_score": 6.382999420166016,
+        "top_dense_distance": 0.21602926063188221,
+        "returned": [
+          "deployment-process.md#Rollback policy",
+          "orders-api-runbook.md#Rolling back",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "deployment-process.md#Post-deployment verification",
+          "deployment-process.md#Deployment windows"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q14",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 358.26,
+        "top_rerank_score": 9.554512977600098,
+        "top_dense_distance": 0.20917758832245015,
+        "returned": [
+          "deployment-process.md#Deployment windows",
+          "orders-api-runbook.md#Orders API Runbook",
+          "deployment-process.md#Deployment pipeline",
+          "deployment-process.md#Post-deployment verification",
+          "deployment-process.md#Rollback policy"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q15",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 408.27,
+        "top_rerank_score": 7.598677635192871,
+        "top_dense_distance": 0.1902588975120848,
+        "returned": [
+          "deployment-process.md#Deployment pipeline",
+          "deployment-process.md#Post-deployment verification",
+          "orders-api-runbook.md#Rolling back",
+          "deployment-process.md#Deployment windows",
+          "deployment-process.md#Rollback policy"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q16",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 355.72,
+        "top_rerank_score": 7.312443256378174,
+        "top_dense_distance": 0.22002395033407962,
+        "returned": [
+          "deployment-process.md#Post-deployment verification",
+          "checkout-db-connection-runbook.md#Verification",
+          "orders-api-runbook.md#OrdersApiHigh5xxRate",
+          "deployment-process.md#Deployment windows",
+          "deployment-process.md#Rollback policy"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q17",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 350.89,
+        "top_rerank_score": 6.824108123779297,
+        "top_dense_distance": 0.19240920588915167,
+        "returned": [
+          "service-architecture.md#Dependencies and timeouts",
+          "orders-api-runbook.md#Known failure modes",
+          "service-architecture.md#Request flow",
+          "orders-api-runbook.md#Service overview",
+          "postmortem-2026-03-orders-pool.md#Summary"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q18",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 377.23,
+        "top_rerank_score": 0.34052813053131104,
+        "top_dense_distance": 0.28597470689120896,
+        "returned": [
+          "service-architecture.md#Services",
+          "orders-api-runbook.md#Service overview",
+          "orders-api-runbook.md#Orders API Runbook",
+          "service-architecture.md#Request flow",
+          "postmortem-2026-03-orders-pool.md#Summary"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q19",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 357.45,
+        "top_rerank_score": 6.0891313552856445,
+        "top_dense_distance": 0.1605436110172489,
+        "returned": [
+          "service-architecture.md#Request flow",
+          "oncall-escalation.md#Severity levels",
+          "orders-api-runbook.md#Service overview",
+          "postmortem-2026-03-orders-pool.md#Summary",
+          "orders-api-runbook.md#Known failure modes"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q20",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 381.74,
+        "top_rerank_score": 7.637388229370117,
+        "top_dense_distance": 0.1448629153101646,
+        "returned": [
+          "oncall-escalation.md#Escalation",
+          "oncall-escalation.md#Severity levels",
+          "oncall-escalation.md#Rotations",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "orders-api-runbook.md#Rolling back"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q21",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 355.74,
+        "top_rerank_score": -0.07977444678544998,
+        "top_dense_distance": 0.30902886390686035,
+        "returned": [
+          "oncall-escalation.md#Severity levels",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "postmortem-2026-03-orders-pool.md#Postmortem: Orders API connection pool exhaustion (2026-03-12)",
+          "deployment-process.md#Rollback policy",
+          "postmortem-2026-03-orders-pool.md#Root cause"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q22",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 387.32,
+        "top_rerank_score": 4.693469047546387,
+        "top_dense_distance": 0.33948723438458117,
+        "returned": [
+          "service-architecture.md#Request flow",
+          "oncall-escalation.md#Rotations",
+          "payment-provider-integration.md#Overview",
+          "service-architecture.md#Dependencies and timeouts",
+          "checkout-db-connection-runbook.md#If recovery fails"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 0.5,
+        "ndcg": 0.6309297535714575
+      },
+      {
+        "id": "q23",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 356.28,
+        "top_rerank_score": 4.11322546005249,
+        "top_dense_distance": 0.3214506315320341,
+        "returned": [
+          "postmortem-2026-03-orders-pool.md#Root cause",
+          "postmortem-2026-03-orders-pool.md#Summary",
+          "orders-api-runbook.md#OrdersApiHigh5xxRate",
+          "orders-api-runbook.md#OrdersApiLatencyHigh",
+          "postmortem-2026-03-orders-pool.md#Postmortem: Orders API connection pool exhaustion (2026-03-12)"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.4,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q24",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 335.51,
+        "top_rerank_score": 7.247631072998047,
+        "top_dense_distance": 0.2168790777017885,
+        "returned": [
+          "postmortem-2026-03-orders-pool.md#Lessons and action items",
+          "postmortem-2026-03-orders-pool.md#Postmortem: Orders API connection pool exhaustion (2026-03-12)",
+          "postmortem-2026-03-orders-pool.md#Summary",
+          "postmortem-2026-03-orders-pool.md#Timeline (UTC)",
+          "orders-api-runbook.md#Known failure modes"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.4,
+        "mrr": 1.0,
+        "ndcg": 0.8772153153380493
+      },
+      {
+        "id": "q25",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 344.21,
+        "top_rerank_score": 8.423652648925781,
+        "top_dense_distance": 0.21145143645422892,
+        "returned": [
+          "payment-provider-integration.md#Failure handling",
+          "payment-provider-integration.md#Idempotency",
+          "payment-provider-integration.md#Payment Provider Integration",
+          "payment-provider-integration.md#Vendor notes",
+          "payment-provider-integration.md#Overview"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q26",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 316.96,
+        "top_rerank_score": 2.639976739883423,
+        "top_dense_distance": 0.28419492934972346,
+        "returned": [
+          "payment-provider-integration.md#Idempotency",
+          "service-architecture.md#Dependencies and timeouts",
+          "payment-provider-integration.md#Overview",
+          "payment-provider-integration.md#Failure handling",
+          "checkout-db-connection-runbook.md#Recovery procedure"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "u01",
+        "split": "dev",
+        "answerable": false,
+        "latency_ms": 378.88,
+        "top_rerank_score": -8.861205101013184,
+        "top_dense_distance": 0.4432706832885742,
+        "returned": [
+          "oncall-escalation.md#Rotations",
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "deployment-process.md#Post-deployment verification",
+          "payment-provider-integration.md#Failure handling",
+          "postmortem-2026-03-orders-pool.md#Root cause"
+        ],
+        "forbidden_hit": false
+      },
+      {
+        "id": "u02",
+        "split": "test",
+        "answerable": false,
+        "latency_ms": 352.37,
+        "top_rerank_score": -10.875032424926758,
+        "top_dense_distance": 0.4268827438354492,
+        "returned": [
+          "orders-api-runbook.md#OrdersApiHigh5xxRate",
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "payment-provider-integration.md#Failure handling",
+          "service-architecture.md#Dependencies and timeouts",
+          "deployment-process.md#Post-deployment verification"
+        ],
+        "forbidden_hit": false
+      },
+      {
+        "id": "u03",
+        "split": "dev",
+        "answerable": false,
+        "latency_ms": 217.63,
+        "top_rerank_score": -10.981989860534668,
+        "top_dense_distance": 0.4345690686024305,
+        "returned": [
+          "oncall-escalation.md#Rotations",
+          "oncall-escalation.md#Escalation",
+          "oncall-escalation.md#Severity levels",
+          "deployment-process.md#Rollback policy",
+          "deployment-process.md#Deployment pipeline"
+        ],
+        "forbidden_hit": false
+      },
+      {
+        "id": "u04",
+        "split": "test",
+        "answerable": false,
+        "latency_ms": 368.51,
+        "top_rerank_score": -11.016376495361328,
+        "top_dense_distance": 0.4577885916485043,
+        "returned": [
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "orders-api-runbook.md#OrdersApiHigh5xxRate",
+          "checkout-db-connection-runbook.md#Preconditions",
+          "payment-provider-integration.md#Failure handling",
+          "checkout-db-connection-runbook.md#If recovery fails"
+        ],
+        "forbidden_hit": false
+      },
+      {
+        "id": "u05",
+        "split": "dev",
+        "answerable": false,
+        "latency_ms": 352.67,
+        "top_rerank_score": -10.334689140319824,
+        "top_dense_distance": 0.4791788769257729,
+        "returned": [
+          "service-architecture.md#Request flow",
+          "service-architecture.md#Observability",
+          "orders-api-runbook.md#Service overview",
+          "payment-provider-integration.md#Idempotency",
+          "payment-provider-integration.md#Payment Provider Integration"
+        ],
+        "forbidden_hit": false
+      },
+      {
+        "id": "u06",
+        "split": "test",
+        "answerable": false,
+        "latency_ms": 313.41,
+        "top_rerank_score": -11.107828140258789,
+        "top_dense_distance": 0.48092424869536987,
+        "returned": [
+          "payment-provider-integration.md#Failure handling",
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "payment-provider-integration.md#Payment Provider Integration",
+          "payment-provider-integration.md#Idempotency",
+          "deployment-process.md#Deployment pipeline"
+        ],
+        "forbidden_hit": false
+      },
+      {
+        "id": "p01",
+        "split": "test",
+        "answerable": false,
+        "latency_ms": 308.08,
+        "top_rerank_score": -10.472070693969727,
+        "top_dense_distance": 0.39795602584408973,
+        "returned": [
+          "checkout-db-connection-runbook.md#Checkout Service Runbook: Database Connection Failure",
+          "checkout-db-connection-runbook.md#Preconditions",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "postmortem-2026-03-orders-pool.md#Root cause",
+          "checkout-db-connection-runbook.md#Verification"
+        ],
+        "forbidden_hit": false
+      },
+      {
+        "id": "p02",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 291.24,
+        "top_rerank_score": 4.994695663452148,
+        "top_dense_distance": 0.2935704413908444,
+        "returned": [
+          "database-credentials-rotation.md#Procedure",
+          "checkout-db-connection-runbook.md#Checkout Service Runbook: Database Connection Failure",
+          "checkout-db-connection-runbook.md#Preconditions",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "database-credentials-rotation.md#Database Credential Rotation (Restricted: SRE only)"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "i01",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 279.58,
+        "top_rerank_score": 6.178870677947998,
+        "top_dense_distance": 0.1737162574360509,
+        "returned": [
+          "payment-provider-integration.md#Failure handling",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "checkout-db-connection-runbook.md#Checkout Service Runbook: Database Connection Failure",
+          "payment-provider-integration.md#Overview"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      }
+    ],
+    "hybrid_rrf+rerank@20": [
+      {
+        "id": "q01",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 201.24,
+        "top_rerank_score": 6.653403282165527,
+        "top_dense_distance": 0.17742908000946045,
+        "returned": [
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "checkout-db-connection-runbook.md#Preconditions",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "checkout-db-connection-runbook.md#Verification",
+          "checkout-db-connection-runbook.md#Symptoms"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q02",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 193.64,
+        "top_rerank_score": 8.512102127075195,
+        "top_dense_distance": 0.15823516721234188,
+        "returned": [
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "checkout-db-connection-runbook.md#Preconditions",
+          "checkout-db-connection-runbook.md#Verification",
+          "checkout-db-connection-runbook.md#Symptoms"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q03",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 193.77,
+        "top_rerank_score": 6.30135440826416,
+        "top_dense_distance": 0.2550776752875836,
+        "returned": [
+          "checkout-db-connection-runbook.md#Symptoms",
+          "checkout-db-connection-runbook.md#Preconditions",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "checkout-db-connection-runbook.md#Verification",
+          "checkout-db-connection-runbook.md#Checkout Service Runbook: Database Connection Failure"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q04",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 211.19,
+        "top_rerank_score": 7.1003947257995605,
+        "top_dense_distance": 0.25110086785544006,
+        "returned": [
+          "checkout-db-connection-runbook.md#Preconditions",
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "checkout-db-connection-runbook.md#Verification",
+          "checkout-db-connection-runbook.md#Symptoms"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q05",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 197.6,
+        "top_rerank_score": 4.70187520980835,
+        "top_dense_distance": 0.23491308272920508,
+        "returned": [
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "checkout-db-connection-runbook.md#Symptoms",
+          "oncall-escalation.md#Severity levels",
+          "postmortem-2026-03-orders-pool.md#Summary"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q06",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 199.2,
+        "top_rerank_score": 3.6968963146209717,
+        "top_dense_distance": 0.35004234313964844,
+        "returned": [
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "checkout-db-connection-runbook.md#Verification",
+          "checkout-db-connection-runbook.md#Preconditions",
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "payment-provider-integration.md#Failure handling"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 0.5,
+        "ndcg": 0.6309297535714575
+      },
+      {
+        "id": "q07",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 128.9,
+        "top_rerank_score": 7.888293743133545,
+        "top_dense_distance": 0.13787490129470825,
+        "returned": [
+          "orders-api-runbook.md#OrdersApiHigh5xxRate",
+          "orders-api-runbook.md#Rolling back",
+          "orders-api-runbook.md#OrdersApiLatencyHigh",
+          "postmortem-2026-03-orders-pool.md#Timeline (UTC)",
+          "deployment-process.md#Post-deployment verification"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q08",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 135.23,
+        "top_rerank_score": 4.644525527954102,
+        "top_dense_distance": 0.20885679616250474,
+        "returned": [
+          "orders-api-runbook.md#OrdersApiHigh5xxRate",
+          "postmortem-2026-03-orders-pool.md#Summary",
+          "orders-api-runbook.md#Known failure modes",
+          "postmortem-2026-03-orders-pool.md#Lessons and action items",
+          "postmortem-2026-03-orders-pool.md#Timeline (UTC)"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.6,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q09",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 197.45,
+        "top_rerank_score": 6.17013692855835,
+        "top_dense_distance": 0.2583957314491272,
+        "returned": [
+          "orders-api-runbook.md#OrdersApiLatencyHigh",
+          "postmortem-2026-03-orders-pool.md#Lessons and action items",
+          "postmortem-2026-03-orders-pool.md#Summary",
+          "orders-api-runbook.md#Known failure modes",
+          "postmortem-2026-03-orders-pool.md#Root cause"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.4,
+        "mrr": 1.0,
+        "ndcg": 0.9197207891481876
+      },
+      {
+        "id": "q10",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 192.69,
+        "top_rerank_score": 4.603711128234863,
+        "top_dense_distance": 0.2277284128827789,
+        "returned": [
+          "postmortem-2026-03-orders-pool.md#Root cause",
+          "orders-api-runbook.md#Known failure modes",
+          "postmortem-2026-03-orders-pool.md#Summary",
+          "postmortem-2026-03-orders-pool.md#Lessons and action items",
+          "checkout-db-connection-runbook.md#Symptoms"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 0.5,
+        "ndcg": 0.6309297535714575
+      },
+      {
+        "id": "q11",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 193.85,
+        "top_rerank_score": 7.82966423034668,
+        "top_dense_distance": 0.15244263410567638,
+        "returned": [
+          "orders-api-runbook.md#Rolling back",
+          "postmortem-2026-03-orders-pool.md#Lessons and action items",
+          "orders-api-runbook.md#OrdersApiHigh5xxRate",
+          "orders-api-runbook.md#Service overview",
+          "deployment-process.md#Rollback policy"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.4,
+        "mrr": 1.0,
+        "ndcg": 0.8503449055347546
+      },
+      {
+        "id": "q12",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 191.99,
+        "top_rerank_score": 6.292825222015381,
+        "top_dense_distance": 0.2008255124092102,
+        "returned": [
+          "deployment-process.md#Rollback policy",
+          "orders-api-runbook.md#Rolling back",
+          "deployment-process.md#Deployment windows",
+          "deployment-process.md#Post-deployment verification",
+          "payment-provider-integration.md#Vendor notes"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.4,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q13",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 192.7,
+        "top_rerank_score": 6.382999420166016,
+        "top_dense_distance": 0.21602926063188221,
+        "returned": [
+          "deployment-process.md#Rollback policy",
+          "orders-api-runbook.md#Rolling back",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "deployment-process.md#Post-deployment verification",
+          "deployment-process.md#Deployment windows"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q14",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 126.2,
+        "top_rerank_score": 9.554512977600098,
+        "top_dense_distance": 0.20917758832245015,
+        "returned": [
+          "deployment-process.md#Deployment windows",
+          "orders-api-runbook.md#Orders API Runbook",
+          "deployment-process.md#Deployment pipeline",
+          "deployment-process.md#Post-deployment verification",
+          "deployment-process.md#Rollback policy"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q15",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 146.31,
+        "top_rerank_score": 7.598677635192871,
+        "top_dense_distance": 0.1902588975120848,
+        "returned": [
+          "deployment-process.md#Deployment pipeline",
+          "deployment-process.md#Post-deployment verification",
+          "orders-api-runbook.md#Rolling back",
+          "deployment-process.md#Deployment windows",
+          "deployment-process.md#Rollback policy"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q16",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 127.73,
+        "top_rerank_score": 7.312443256378174,
+        "top_dense_distance": 0.22002395033407962,
+        "returned": [
+          "deployment-process.md#Post-deployment verification",
+          "checkout-db-connection-runbook.md#Verification",
+          "orders-api-runbook.md#OrdersApiHigh5xxRate",
+          "deployment-process.md#Deployment windows",
+          "deployment-process.md#Rollback policy"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q17",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 212.88,
+        "top_rerank_score": 6.824108123779297,
+        "top_dense_distance": 0.19240920588915167,
+        "returned": [
+          "service-architecture.md#Dependencies and timeouts",
+          "orders-api-runbook.md#Known failure modes",
+          "service-architecture.md#Request flow",
+          "orders-api-runbook.md#Service overview",
+          "postmortem-2026-03-orders-pool.md#Summary"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q18",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 131.21,
+        "top_rerank_score": 0.34052813053131104,
+        "top_dense_distance": 0.28597470689120896,
+        "returned": [
+          "service-architecture.md#Services",
+          "orders-api-runbook.md#Service overview",
+          "orders-api-runbook.md#Orders API Runbook",
+          "service-architecture.md#Request flow",
+          "postmortem-2026-03-orders-pool.md#Summary"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q19",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 129.22,
+        "top_rerank_score": 6.0891313552856445,
+        "top_dense_distance": 0.1605436110172489,
+        "returned": [
+          "service-architecture.md#Request flow",
+          "oncall-escalation.md#Severity levels",
+          "orders-api-runbook.md#Service overview",
+          "postmortem-2026-03-orders-pool.md#Summary",
+          "orders-api-runbook.md#Known failure modes"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q20",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 135.18,
+        "top_rerank_score": 7.637388229370117,
+        "top_dense_distance": 0.1448629153101646,
+        "returned": [
+          "oncall-escalation.md#Escalation",
+          "oncall-escalation.md#Severity levels",
+          "oncall-escalation.md#Rotations",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "orders-api-runbook.md#Rolling back"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q21",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 141.91,
+        "top_rerank_score": -0.07977444678544998,
+        "top_dense_distance": 0.30902886390686035,
+        "returned": [
+          "oncall-escalation.md#Severity levels",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "postmortem-2026-03-orders-pool.md#Postmortem: Orders API connection pool exhaustion (2026-03-12)",
+          "deployment-process.md#Rollback policy",
+          "postmortem-2026-03-orders-pool.md#Root cause"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q22",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 224.2,
+        "top_rerank_score": 4.693469047546387,
+        "top_dense_distance": 0.33948723438458117,
+        "returned": [
+          "service-architecture.md#Request flow",
+          "oncall-escalation.md#Rotations",
+          "payment-provider-integration.md#Overview",
+          "service-architecture.md#Dependencies and timeouts",
+          "checkout-db-connection-runbook.md#If recovery fails"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 0.5,
+        "ndcg": 0.6309297535714575
+      },
+      {
+        "id": "q23",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 194.91,
+        "top_rerank_score": 4.11322546005249,
+        "top_dense_distance": 0.3214506315320341,
+        "returned": [
+          "postmortem-2026-03-orders-pool.md#Root cause",
+          "postmortem-2026-03-orders-pool.md#Summary",
+          "orders-api-runbook.md#OrdersApiHigh5xxRate",
+          "orders-api-runbook.md#OrdersApiLatencyHigh",
+          "postmortem-2026-03-orders-pool.md#Postmortem: Orders API connection pool exhaustion (2026-03-12)"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.4,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q24",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 204.8,
+        "top_rerank_score": 7.247631072998047,
+        "top_dense_distance": 0.2168790777017885,
+        "returned": [
+          "postmortem-2026-03-orders-pool.md#Lessons and action items",
+          "postmortem-2026-03-orders-pool.md#Postmortem: Orders API connection pool exhaustion (2026-03-12)",
+          "postmortem-2026-03-orders-pool.md#Summary",
+          "orders-api-runbook.md#Known failure modes",
+          "orders-api-runbook.md#Rolling back"
+        ],
+        "forbidden_hit": false,
+        "recall": 0.5,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 0.6131471927654584
+      },
+      {
+        "id": "q25",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 209.46,
+        "top_rerank_score": 8.423652648925781,
+        "top_dense_distance": 0.21145143645422892,
+        "returned": [
+          "payment-provider-integration.md#Failure handling",
+          "payment-provider-integration.md#Idempotency",
+          "payment-provider-integration.md#Payment Provider Integration",
+          "payment-provider-integration.md#Vendor notes",
+          "payment-provider-integration.md#Overview"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q26",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 207.93,
+        "top_rerank_score": 2.639976739883423,
+        "top_dense_distance": 0.28419492934972346,
+        "returned": [
+          "payment-provider-integration.md#Idempotency",
+          "service-architecture.md#Dependencies and timeouts",
+          "payment-provider-integration.md#Overview",
+          "payment-provider-integration.md#Failure handling",
+          "checkout-db-connection-runbook.md#Recovery procedure"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "u01",
+        "split": "dev",
+        "answerable": false,
+        "latency_ms": 217.04,
+        "top_rerank_score": -8.861205101013184,
+        "top_dense_distance": 0.4432706832885742,
+        "returned": [
+          "oncall-escalation.md#Rotations",
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "deployment-process.md#Post-deployment verification",
+          "postmortem-2026-03-orders-pool.md#Summary",
+          "deployment-process.md#Deployment pipeline"
+        ],
+        "forbidden_hit": false
+      },
+      {
+        "id": "u02",
+        "split": "test",
+        "answerable": false,
+        "latency_ms": 205.26,
+        "top_rerank_score": -10.875032424926758,
+        "top_dense_distance": 0.4268827438354492,
+        "returned": [
+          "orders-api-runbook.md#OrdersApiHigh5xxRate",
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "payment-provider-integration.md#Failure handling",
+          "service-architecture.md#Dependencies and timeouts",
+          "deployment-process.md#Post-deployment verification"
+        ],
+        "forbidden_hit": false
+      },
+      {
+        "id": "u03",
+        "split": "dev",
+        "answerable": false,
+        "latency_ms": 131.99,
+        "top_rerank_score": -10.981989860534668,
+        "top_dense_distance": 0.4345690686024305,
+        "returned": [
+          "oncall-escalation.md#Rotations",
+          "oncall-escalation.md#Escalation",
+          "oncall-escalation.md#Severity levels",
+          "deployment-process.md#Rollback policy",
+          "postmortem-2026-03-orders-pool.md#Summary"
+        ],
+        "forbidden_hit": false
+      },
+      {
+        "id": "u04",
+        "split": "test",
+        "answerable": false,
+        "latency_ms": 204.99,
+        "top_rerank_score": -11.016376495361328,
+        "top_dense_distance": 0.4577885916485043,
+        "returned": [
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "orders-api-runbook.md#OrdersApiHigh5xxRate",
+          "payment-provider-integration.md#Failure handling",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "postmortem-2026-03-orders-pool.md#Summary"
+        ],
+        "forbidden_hit": false
+      },
+      {
+        "id": "u05",
+        "split": "dev",
+        "answerable": false,
+        "latency_ms": 126.92,
+        "top_rerank_score": -10.334689140319824,
+        "top_dense_distance": 0.4791788769257729,
+        "returned": [
+          "service-architecture.md#Request flow",
+          "service-architecture.md#Observability",
+          "orders-api-runbook.md#Service overview",
+          "deployment-process.md#Post-deployment verification",
+          "deployment-process.md#Rollback policy"
+        ],
+        "forbidden_hit": false
+      },
+      {
+        "id": "u06",
+        "split": "test",
+        "answerable": false,
+        "latency_ms": 205.31,
+        "top_rerank_score": -11.107828140258789,
+        "top_dense_distance": 0.48092424869536987,
+        "returned": [
+          "payment-provider-integration.md#Failure handling",
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "payment-provider-integration.md#Payment Provider Integration",
+          "deployment-process.md#Deployment pipeline",
+          "checkout-db-connection-runbook.md#Preconditions"
+        ],
+        "forbidden_hit": false
+      },
+      {
+        "id": "p01",
+        "split": "test",
+        "answerable": false,
+        "latency_ms": 195.98,
+        "top_rerank_score": -10.472070693969727,
+        "top_dense_distance": 0.39795602584408973,
+        "returned": [
+          "checkout-db-connection-runbook.md#Checkout Service Runbook: Database Connection Failure",
+          "checkout-db-connection-runbook.md#Preconditions",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "postmortem-2026-03-orders-pool.md#Root cause",
+          "checkout-db-connection-runbook.md#Verification"
+        ],
+        "forbidden_hit": false
+      },
+      {
+        "id": "p02",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 195.62,
+        "top_rerank_score": 4.994695663452148,
+        "top_dense_distance": 0.2935704413908444,
+        "returned": [
+          "database-credentials-rotation.md#Procedure",
+          "checkout-db-connection-runbook.md#Checkout Service Runbook: Database Connection Failure",
+          "checkout-db-connection-runbook.md#Preconditions",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "database-credentials-rotation.md#Database Credential Rotation (Restricted: SRE only)"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "i01",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 190.18,
+        "top_rerank_score": 6.178870677947998,
+        "top_dense_distance": 0.1737162574360509,
+        "returned": [
+          "payment-provider-integration.md#Failure handling",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "checkout-db-connection-runbook.md#Checkout Service Runbook: Database Connection Failure",
+          "payment-provider-integration.md#Overview"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      }
+    ],
+    "hybrid_rrf+rerank@10": [
+      {
+        "id": "q01",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 107.96,
+        "top_rerank_score": 6.653403282165527,
+        "top_dense_distance": 0.17742908000946045,
+        "returned": [
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "checkout-db-connection-runbook.md#Preconditions",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "checkout-db-connection-runbook.md#Verification",
+          "checkout-db-connection-runbook.md#Symptoms"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q02",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 121.89,
+        "top_rerank_score": 8.512102127075195,
+        "top_dense_distance": 0.15823516721234188,
+        "returned": [
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "checkout-db-connection-runbook.md#Preconditions",
+          "checkout-db-connection-runbook.md#Verification",
+          "checkout-db-connection-runbook.md#Symptoms"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q03",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 110.27,
+        "top_rerank_score": 6.30135440826416,
+        "top_dense_distance": 0.2550776752875836,
+        "returned": [
+          "checkout-db-connection-runbook.md#Symptoms",
+          "checkout-db-connection-runbook.md#Preconditions",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "checkout-db-connection-runbook.md#Verification",
+          "checkout-db-connection-runbook.md#Checkout Service Runbook: Database Connection Failure"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q04",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 119.99,
+        "top_rerank_score": 7.1003947257995605,
+        "top_dense_distance": 0.25110086785544006,
+        "returned": [
+          "checkout-db-connection-runbook.md#Preconditions",
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "checkout-db-connection-runbook.md#Verification",
+          "checkout-db-connection-runbook.md#Symptoms"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q05",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 116.96,
+        "top_rerank_score": 4.70187520980835,
+        "top_dense_distance": 0.23491308272920508,
+        "returned": [
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "checkout-db-connection-runbook.md#Symptoms",
+          "oncall-escalation.md#Severity levels",
+          "postmortem-2026-03-orders-pool.md#Summary"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q06",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 104.6,
+        "top_rerank_score": 3.6968963146209717,
+        "top_dense_distance": 0.35004234313964844,
+        "returned": [
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "checkout-db-connection-runbook.md#Verification",
+          "checkout-db-connection-runbook.md#Preconditions",
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "payment-provider-integration.md#Failure handling"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 0.5,
+        "ndcg": 0.6309297535714575
+      },
+      {
+        "id": "q07",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 77.66,
+        "top_rerank_score": 7.888293743133545,
+        "top_dense_distance": 0.13787490129470825,
+        "returned": [
+          "orders-api-runbook.md#OrdersApiHigh5xxRate",
+          "orders-api-runbook.md#Rolling back",
+          "orders-api-runbook.md#OrdersApiLatencyHigh",
+          "postmortem-2026-03-orders-pool.md#Timeline (UTC)",
+          "postmortem-2026-03-orders-pool.md#Lessons and action items"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q08",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 77.13,
+        "top_rerank_score": 4.644525527954102,
+        "top_dense_distance": 0.20885679616250474,
+        "returned": [
+          "orders-api-runbook.md#OrdersApiHigh5xxRate",
+          "postmortem-2026-03-orders-pool.md#Summary",
+          "orders-api-runbook.md#Known failure modes",
+          "postmortem-2026-03-orders-pool.md#Lessons and action items",
+          "postmortem-2026-03-orders-pool.md#Timeline (UTC)"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.6,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q09",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 105.55,
+        "top_rerank_score": 6.17013692855835,
+        "top_dense_distance": 0.2583957314491272,
+        "returned": [
+          "orders-api-runbook.md#OrdersApiLatencyHigh",
+          "postmortem-2026-03-orders-pool.md#Lessons and action items",
+          "postmortem-2026-03-orders-pool.md#Summary",
+          "orders-api-runbook.md#Known failure modes",
+          "postmortem-2026-03-orders-pool.md#Root cause"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.4,
+        "mrr": 1.0,
+        "ndcg": 0.9197207891481876
+      },
+      {
+        "id": "q10",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 79.45,
+        "top_rerank_score": 4.603711128234863,
+        "top_dense_distance": 0.2277284128827789,
+        "returned": [
+          "postmortem-2026-03-orders-pool.md#Root cause",
+          "orders-api-runbook.md#Known failure modes",
+          "postmortem-2026-03-orders-pool.md#Summary",
+          "postmortem-2026-03-orders-pool.md#Lessons and action items",
+          "orders-api-runbook.md#OrdersApiLatencyHigh"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 0.5,
+        "ndcg": 0.6309297535714575
+      },
+      {
+        "id": "q11",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 74.36,
+        "top_rerank_score": 7.82966423034668,
+        "top_dense_distance": 0.15244263410567638,
+        "returned": [
+          "orders-api-runbook.md#Rolling back",
+          "postmortem-2026-03-orders-pool.md#Lessons and action items",
+          "orders-api-runbook.md#OrdersApiHigh5xxRate",
+          "orders-api-runbook.md#Service overview",
+          "deployment-process.md#Rollback policy"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.4,
+        "mrr": 1.0,
+        "ndcg": 0.8503449055347546
+      },
+      {
+        "id": "q12",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 74.28,
+        "top_rerank_score": 6.292827129364014,
+        "top_dense_distance": 0.2008255124092102,
+        "returned": [
+          "deployment-process.md#Rollback policy",
+          "orders-api-runbook.md#Rolling back",
+          "deployment-process.md#Deployment windows",
+          "deployment-process.md#Post-deployment verification",
+          "payment-provider-integration.md#Vendor notes"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.4,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q13",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 77.34,
+        "top_rerank_score": 6.382999420166016,
+        "top_dense_distance": 0.21602926063188221,
+        "returned": [
+          "deployment-process.md#Rollback policy",
+          "orders-api-runbook.md#Rolling back",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "deployment-process.md#Deployment windows",
+          "postmortem-2026-03-orders-pool.md#Timeline (UTC)"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q14",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 73.61,
+        "top_rerank_score": 9.554512977600098,
+        "top_dense_distance": 0.20917758832245015,
+        "returned": [
+          "deployment-process.md#Deployment windows",
+          "orders-api-runbook.md#Orders API Runbook",
+          "deployment-process.md#Deployment pipeline",
+          "deployment-process.md#Post-deployment verification",
+          "deployment-process.md#Rollback policy"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q15",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 77.81,
+        "top_rerank_score": 7.598677635192871,
+        "top_dense_distance": 0.1902588975120848,
+        "returned": [
+          "deployment-process.md#Deployment pipeline",
+          "deployment-process.md#Post-deployment verification",
+          "orders-api-runbook.md#Rolling back",
+          "deployment-process.md#Deployment windows",
+          "deployment-process.md#Rollback policy"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q16",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 79.83,
+        "top_rerank_score": 7.312443256378174,
+        "top_dense_distance": 0.22002395033407962,
+        "returned": [
+          "deployment-process.md#Post-deployment verification",
+          "checkout-db-connection-runbook.md#Verification",
+          "orders-api-runbook.md#OrdersApiHigh5xxRate",
+          "deployment-process.md#Deployment windows",
+          "deployment-process.md#Rollback policy"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q17",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 78.89,
+        "top_rerank_score": 6.824108123779297,
+        "top_dense_distance": 0.19240920588915167,
+        "returned": [
+          "service-architecture.md#Dependencies and timeouts",
+          "orders-api-runbook.md#Known failure modes",
+          "service-architecture.md#Request flow",
+          "orders-api-runbook.md#Service overview",
+          "postmortem-2026-03-orders-pool.md#Summary"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q18",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 76.22,
+        "top_rerank_score": 0.34052813053131104,
+        "top_dense_distance": 0.28597470689120896,
+        "returned": [
+          "service-architecture.md#Services",
+          "orders-api-runbook.md#Service overview",
+          "orders-api-runbook.md#Orders API Runbook",
+          "service-architecture.md#Request flow",
+          "postmortem-2026-03-orders-pool.md#Summary"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q19",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 69.17,
+        "top_rerank_score": 6.0891313552856445,
+        "top_dense_distance": 0.1605436110172489,
+        "returned": [
+          "service-architecture.md#Request flow",
+          "oncall-escalation.md#Severity levels",
+          "orders-api-runbook.md#Service overview",
+          "postmortem-2026-03-orders-pool.md#Summary",
+          "orders-api-runbook.md#Known failure modes"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q20",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 78.8,
+        "top_rerank_score": 7.637388229370117,
+        "top_dense_distance": 0.1448629153101646,
+        "returned": [
+          "oncall-escalation.md#Escalation",
+          "oncall-escalation.md#Severity levels",
+          "oncall-escalation.md#Rotations",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "orders-api-runbook.md#Rolling back"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q21",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 76.44,
+        "top_rerank_score": -0.07977444678544998,
+        "top_dense_distance": 0.30902886390686035,
+        "returned": [
+          "oncall-escalation.md#Severity levels",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "postmortem-2026-03-orders-pool.md#Postmortem: Orders API connection pool exhaustion (2026-03-12)",
+          "deployment-process.md#Rollback policy",
+          "postmortem-2026-03-orders-pool.md#Summary"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q22",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 102.12,
+        "top_rerank_score": 4.693469047546387,
+        "top_dense_distance": 0.33948723438458117,
+        "returned": [
+          "service-architecture.md#Request flow",
+          "oncall-escalation.md#Rotations",
+          "payment-provider-integration.md#Overview",
+          "service-architecture.md#Dependencies and timeouts",
+          "oncall-escalation.md#Severity levels"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 0.5,
+        "ndcg": 0.6309297535714575
+      },
+      {
+        "id": "q23",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 72.78,
+        "top_rerank_score": 4.11322546005249,
+        "top_dense_distance": 0.3214506315320341,
+        "returned": [
+          "postmortem-2026-03-orders-pool.md#Root cause",
+          "postmortem-2026-03-orders-pool.md#Summary",
+          "orders-api-runbook.md#OrdersApiHigh5xxRate",
+          "orders-api-runbook.md#OrdersApiLatencyHigh",
+          "postmortem-2026-03-orders-pool.md#Postmortem: Orders API connection pool exhaustion (2026-03-12)"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.4,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q24",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 107.14,
+        "top_rerank_score": 7.247631072998047,
+        "top_dense_distance": 0.2168790777017885,
+        "returned": [
+          "postmortem-2026-03-orders-pool.md#Lessons and action items",
+          "postmortem-2026-03-orders-pool.md#Postmortem: Orders API connection pool exhaustion (2026-03-12)",
+          "postmortem-2026-03-orders-pool.md#Summary",
+          "orders-api-runbook.md#Known failure modes",
+          "orders-api-runbook.md#Rolling back"
+        ],
+        "forbidden_hit": false,
+        "recall": 0.5,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 0.6131471927654584
+      },
+      {
+        "id": "q25",
+        "split": "dev",
+        "answerable": true,
+        "latency_ms": 108.13,
+        "top_rerank_score": 8.423652648925781,
+        "top_dense_distance": 0.21145143645422892,
+        "returned": [
+          "payment-provider-integration.md#Failure handling",
+          "payment-provider-integration.md#Idempotency",
+          "payment-provider-integration.md#Payment Provider Integration",
+          "payment-provider-integration.md#Vendor notes",
+          "payment-provider-integration.md#Overview"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "q26",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 108.33,
+        "top_rerank_score": 2.639976739883423,
+        "top_dense_distance": 0.28419492934972346,
+        "returned": [
+          "payment-provider-integration.md#Idempotency",
+          "service-architecture.md#Dependencies and timeouts",
+          "payment-provider-integration.md#Overview",
+          "payment-provider-integration.md#Failure handling",
+          "checkout-db-connection-runbook.md#Recovery procedure"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "u01",
+        "split": "dev",
+        "answerable": false,
+        "latency_ms": 107.56,
+        "top_rerank_score": -8.861205101013184,
+        "top_dense_distance": 0.4432706832885742,
+        "returned": [
+          "oncall-escalation.md#Rotations",
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "deployment-process.md#Post-deployment verification",
+          "deployment-process.md#Deployment pipeline",
+          "deployment-process.md#Rollback policy"
+        ],
+        "forbidden_hit": false
+      },
+      {
+        "id": "u02",
+        "split": "test",
+        "answerable": false,
+        "latency_ms": 126.22,
+        "top_rerank_score": -10.875032424926758,
+        "top_dense_distance": 0.4268827438354492,
+        "returned": [
+          "orders-api-runbook.md#OrdersApiHigh5xxRate",
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "deployment-process.md#Post-deployment verification",
+          "deployment-process.md#Rollback policy",
+          "orders-api-runbook.md#Rolling back"
+        ],
+        "forbidden_hit": false
+      },
+      {
+        "id": "u03",
+        "split": "dev",
+        "answerable": false,
+        "latency_ms": 92.07,
+        "top_rerank_score": -10.981989860534668,
+        "top_dense_distance": 0.4345690686024305,
+        "returned": [
+          "oncall-escalation.md#Rotations",
+          "oncall-escalation.md#Escalation",
+          "oncall-escalation.md#Severity levels",
+          "deployment-process.md#Rollback policy",
+          "deployment-process.md#Deployment windows"
+        ],
+        "forbidden_hit": false
+      },
+      {
+        "id": "u04",
+        "split": "test",
+        "answerable": false,
+        "latency_ms": 137.32,
+        "top_rerank_score": -11.016376495361328,
+        "top_dense_distance": 0.4577885916485043,
+        "returned": [
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "orders-api-runbook.md#OrdersApiHigh5xxRate",
+          "postmortem-2026-03-orders-pool.md#Summary",
+          "service-architecture.md#Observability",
+          "postmortem-2026-03-orders-pool.md#Root cause"
+        ],
+        "forbidden_hit": false
+      },
+      {
+        "id": "u05",
+        "split": "dev",
+        "answerable": false,
+        "latency_ms": 80.56,
+        "top_rerank_score": -10.334689140319824,
+        "top_dense_distance": 0.4791788769257729,
+        "returned": [
+          "service-architecture.md#Request flow",
+          "service-architecture.md#Observability",
+          "orders-api-runbook.md#Service overview",
+          "deployment-process.md#Post-deployment verification",
+          "deployment-process.md#Rollback policy"
+        ],
+        "forbidden_hit": false
+      },
+      {
+        "id": "u06",
+        "split": "test",
+        "answerable": false,
+        "latency_ms": 77.79,
+        "top_rerank_score": -11.107828140258789,
+        "top_dense_distance": 0.48092424869536987,
+        "returned": [
+          "payment-provider-integration.md#Failure handling",
+          "payment-provider-integration.md#Payment Provider Integration",
+          "deployment-process.md#Deployment pipeline",
+          "service-architecture.md#Dependencies and timeouts",
+          "payment-provider-integration.md#Overview"
+        ],
+        "forbidden_hit": false
+      },
+      {
+        "id": "p01",
+        "split": "test",
+        "answerable": false,
+        "latency_ms": 79.21,
+        "top_rerank_score": -10.472070693969727,
+        "top_dense_distance": 0.39795602584408973,
+        "returned": [
+          "checkout-db-connection-runbook.md#Checkout Service Runbook: Database Connection Failure",
+          "checkout-db-connection-runbook.md#Preconditions",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "postmortem-2026-03-orders-pool.md#Root cause",
+          "postmortem-2026-03-orders-pool.md#Summary"
+        ],
+        "forbidden_hit": false
+      },
+      {
+        "id": "p02",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 73.61,
+        "top_rerank_score": 4.994695663452148,
+        "top_dense_distance": 0.2935704413908444,
+        "returned": [
+          "database-credentials-rotation.md#Procedure",
+          "checkout-db-connection-runbook.md#Checkout Service Runbook: Database Connection Failure",
+          "checkout-db-connection-runbook.md#Preconditions",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "database-credentials-rotation.md#Database Credential Rotation (Restricted: SRE only)"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      {
+        "id": "i01",
+        "split": "test",
+        "answerable": true,
+        "latency_ms": 110.11,
+        "top_rerank_score": 6.178870677947998,
+        "top_dense_distance": 0.1737162574360509,
+        "returned": [
+          "payment-provider-integration.md#Failure handling",
+          "checkout-db-connection-runbook.md#If recovery fails",
+          "checkout-db-connection-runbook.md#Recovery procedure",
+          "checkout-db-connection-runbook.md#Checkout Service Runbook: Database Connection Failure",
+          "payment-provider-integration.md#Overview"
+        ],
+        "forbidden_hit": false,
+        "recall": 1.0,
+        "precision": 0.2,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      }
+    ]
+  }
+}
