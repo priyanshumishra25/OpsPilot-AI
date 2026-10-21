@@ -1,0 +1,123 @@
+name: opspilot
+
+x-backend-env: &backend-env
+  OPSPILOT_ENVIRONMENT: local
+  OPSPILOT_DATABASE_URL: postgresql+asyncpg://opspilot:${POSTGRES_PASSWORD:-opspilot-local}@postgres:5432/opspilot
+  OPSPILOT_REDIS_URL: redis://redis:6379/0
+  OPSPILOT_S3_ENDPOINT_URL: http://s3:9000
+  OPSPILOT_S3_BUCKET: opspilot-artifacts
+  OPSPILOT_S3_SERVER_SIDE_ENCRYPTION: ""
+  OPSPILOT_S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY:-opspilot}
+  OPSPILOT_S3_SECRET_ACCESS_KEY: ${S3_SECRET_KEY:-opspilot-local-secret}
+  OPSPILOT_JWT_SECRET: ${OPSPILOT_JWT_SECRET:?set OPSPILOT_JWT_SECRET in .env}
+  OPSPILOT_ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+  OPSPILOT_EMBEDDING_CACHE_DIR: /models
+  OPSPILOT_CORS_ORIGINS: '["http://localhost:5173","http://localhost:8080"]'
+  OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
+  OPSPILOT_RATE_LIMIT_LOGIN_PER_MINUTE: ${OPSPILOT_RATE_LIMIT_LOGIN_PER_MINUTE:-10}
+
+services:
+  postgres:
+    image: pgvector/pgvector:0.8.1-pg17
+    environment:
+      POSTGRES_USER: opspilot
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-opspilot-local}
+      POSTGRES_DB: opspilot
+    ports: ["127.0.0.1:5432:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U opspilot -d opspilot"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7.4-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    ports: ["127.0.0.1:6379:6379"]
+    volumes: [redisdata:/data]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      retries: 20
+
+  # S3-compatible object store for local development (SeaweedFS S3 gateway).
+  # The application uses the same boto3 S3 client against AWS S3 in the cloud.
+  s3:
+    image: chrislusf/seaweedfs:4.48
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >-
+        sed -e "s/\$${S3_ACCESS_KEY}/$$S3_ACCESS_KEY/" -e "s/\$${S3_SECRET_KEY}/$$S3_SECRET_KEY/"
+        /config/s3.json.tmpl > /tmp/s3.json &&
+        exec weed server -dir=/data -s3 -s3.port=9000 -s3.config=/tmp/s3.json -master.volumeSizeLimitMB=64 -volume.max=64
+    environment:
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:-opspilot}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:-opspilot-local-secret}
+    ports: ["127.0.0.1:9000:9000"]
+    volumes:
+      - s3data:/data
+      - ./infra/local/seaweedfs-s3.json.tmpl:/config/s3.json.tmpl:ro
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:9000/healthz || exit 1"]
+      interval: 3s
+      retries: 30
+
+  migrate:
+    build: ./backend
+    command: ["sh", "-c", "alembic upgrade head && python -m opspilot.cli bootstrap"]
+    environment: *backend-env
+    volumes: [models:/models]
+    depends_on:
+      postgres: {condition: service_healthy}
+      s3: {condition: service_healthy}
+      redis: {condition: service_healthy}
+
+  # One-shot: creates the labelled demo workspace/users and queues the demo corpus for ingestion.
+  seed:
+    build: ./backend
+    command: ["python", "-m", "opspilot.cli", "seed-demo"]
+    environment:
+      <<: *backend-env
+      OPSPILOT_DEMO_PASSWORD: ${OPSPILOT_DEMO_PASSWORD:-opspilot-demo-password}
+    volumes: [models:/models, ./demo/docs:/demo/docs:ro]
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+    profiles: [demo]
+
+  api:
+    build: ./backend
+    command: ["uvicorn", "opspilot.main:app", "--host", "0.0.0.0", "--port", "8000", "--timeout-graceful-shutdown", "20"]
+    environment: *backend-env
+    ports: ["127.0.0.1:8000:8000"]
+    volumes: [models:/models]
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz')"]
+      interval: 5s
+      retries: 20
+
+  worker:
+    build: ./backend
+    command: ["python", "-m", "opspilot.cli", "worker"]
+    environment: *backend-env
+    volumes: [models:/models]
+    stop_grace_period: 60s
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_BASE_URL: http://localhost:8000
+    ports: ["127.0.0.1:8080:8080"]
+    depends_on:
+      api: {condition: service_healthy}
+
+volumes:
+  pgdata:
+  redisdata:
+  s3data:
+  models:
