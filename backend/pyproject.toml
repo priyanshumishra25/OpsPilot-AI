@@ -1,0 +1,95 @@
+[project]
+name = "opspilot"
+version = "0.1.0"
+description = "OpsPilot AI backend: API, RAG pipeline, ingestion worker, MCP servers, agent orchestration"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "fastapi>=0.156,<0.157",
+  "uvicorn[standard]>=0.40",
+  "pydantic>=2.14,<3",
+  "pydantic-settings>=2.10",
+  "sqlalchemy[asyncio]>=2.1,<2.2",
+  "alembic>=1.20,<2",
+  "asyncpg>=0.32,<0.33",
+  "pgvector>=0.5,<0.6",
+  "redis>=8.1,<9",
+  "sse-starlette>=3.5,<4",
+  "httpx>=0.28,<0.29",
+  "anthropic>=1.17,<2",
+  "langchain-core>=1.6,<2",
+  "langchain-text-splitters>=1.1,<2",
+  "langsmith>=0.14,<0.15",
+  "fastembed>=0.9,<0.10",
+  "pypdf>=6.21,<7",
+  "boto3>=1.43,<2",
+  "pyjwt>=2.15,<3",
+  "argon2-cffi>=25.1",
+  "python-multipart>=0.0.20",
+  "structlog>=26.1",
+  "prometheus-client>=0.26,<0.27",
+  "opentelemetry-sdk>=1.45,<2",
+  "opentelemetry-api>=1.45,<2",
+  "opentelemetry-exporter-otlp-proto-http>=1.45,<2",
+  "opentelemetry-instrumentation-fastapi",
+  "mcp>=2.3,<3",
+  "claude-agent-sdk>=0.2.169,<0.3",
+  "email-validator>=2.2",
+]
+
+[dependency-groups]
+dev = [
+  "pytest>=8.4",
+  "pytest-asyncio>=1.4,<2",
+  "pytest-cov",
+  "ruff>=0.14",
+  "mypy>=1.18",
+  "testcontainers[postgres,redis]>=4.15,<5",
+  "boto3-stubs[s3,sqs]",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/opspilot"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"
+testpaths = ["tests"]
+markers = [
+  "integration: needs Postgres/Redis containers",
+  "models: downloads and runs the real embedding/reranker models",
+]
+filterwarnings = ["ignore::DeprecationWarning:testcontainers.*"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "S", "ASYNC", "BLE", "RUF", "SIM", "PT"]
+ignore = ["S101", "RUF001", "RUF002", "RUF003", "S105", "S106"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S", "BLE", "PT018"]
+"migrations/**" = ["E501", "UP", "I"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+plugins = ["pydantic.mypy"]
+mypy_path = "src"
+packages = ["opspilot"]
+
+[[tool.mypy.overrides]]
+module = ["fastembed.*", "pgvector.*", "testcontainers.*", "sse_starlette.*"]
+ignore_missing_imports = true
+
+[tool.uv]
+# fastembed 0.9 caps pillow<13, but pillow 12.x has known CVEs fixed in 13.0. OpsPilot uses only fastembed's
+# text models (PIL is used by its image models). The override is verified by tests/unit/test_models_smoke.py.
+override-dependencies = ["pillow>=13.0.0"]
