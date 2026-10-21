@@ -249,3 +249,67 @@ class AuditLog(Base):
     details: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)
     trace_id: Mapped[str | None] = mapped_column(String(32))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class IncidentSeverity(enum.StrEnum):
+    SEV1 = "sev1"
+    SEV2 = "sev2"
+    SEV3 = "sev3"
+
+
+class Incident(TimestampMixin, Base):
+    """An incident investigation record and its structured report."""
+
+    __tablename__ = "incidents"
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=_uuid)
+    workspace_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("workspaces.id", ondelete="CASCADE"), index=True)
+    title: Mapped[str] = mapped_column(String(300))
+    severity: Mapped[IncidentSeverity] = mapped_column(_enum(IncidentSeverity, "incident_severity"))
+    status: Mapped[str] = mapped_column(String(32), default="open")
+    service: Mapped[str | None] = mapped_column(String(100))
+    summary: Mapped[str] = mapped_column(Text)
+    report: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)
+    created_by: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
+
+
+class ApprovalStatus(enum.StrEnum):
+    PENDING = "pending"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+    EXPIRED = "expired"
+    EXECUTING = "executing"
+    SUCCEEDED = "succeeded"
+    FAILED = "failed"
+
+
+class Approval(Base):
+    """A durable request to perform one privileged action, bound to exact arguments and target state.
+
+    Transitions (enforced by conditional UPDATEs in approvals/service.py):
+    PENDING -> APPROVED | REJECTED | EXPIRED;  APPROVED -> EXECUTING | EXPIRED;  EXECUTING -> SUCCEEDED | FAILED
+    """
+
+    __tablename__ = "approvals"
+    __table_args__ = (Index("ix_approvals_workspace_status", "workspace_id", "status"),)
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=_uuid)
+    workspace_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("workspaces.id", ondelete="CASCADE"))
+    requested_by: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="RESTRICT"))
+    decided_by: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id", ondelete="RESTRICT"))
+    action: Mapped[str] = mapped_column(String(100))  # e.g. "deployment.rollback"
+    tool_name: Mapped[str] = mapped_column(String(100))  # the only tool allowed to consume this approval
+    arguments: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    arguments_hash: Mapped[str] = mapped_column(String(64))
+    target_resource: Mapped[str] = mapped_column(String(300))
+    target_state: Mapped[dict[str, Any]] = mapped_column(JSONB)  # state snapshot the action was planned against
+    expected_impact: Mapped[str] = mapped_column(Text)
+    reason: Mapped[str] = mapped_column(Text)
+    incident_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("incidents.id", ondelete="SET NULL"))
+    status: Mapped[ApprovalStatus] = mapped_column(_enum(ApprovalStatus, "approval_status"))
+    decision_note: Mapped[str | None] = mapped_column(Text)
+    execution_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), unique=True)
+    result: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    decided_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    execution_started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
