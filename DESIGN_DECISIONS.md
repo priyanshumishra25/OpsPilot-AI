@@ -109,5 +109,18 @@ Building the demo repositories with fixed identities and timestamps makes commit
 control plane, the GitHub server, tests and documentation all refer to the same real commits without committing
 nested repositories.
 
+## Claude Agent SDK, configured down to an MCP-only agent
+The SDK provides the agent loop, MCP client, tool permissions, hooks, budgets, structured output, interruption and
+session resume. Writing those by hand is where agent harnesses usually go wrong. OpsPilot turns off what it doesn't
+want: built-in tools (`tools=[]`), local settings (`setting_sources=[]`), and any tool outside the role policy
+(`disallowed_tools`, so it never enters the model's context). Costs: a CLI subprocess per turn (~1 s start-up),
+and a larger image. Turns run in a separate worker so they scale independently of the API.
+
+## Testing the agent with a scripted model, not a mocked SDK
+The bundled CLI honours `ANTHROPIC_BASE_URL`, so tests point it at a scripted Messages API. Everything except the
+model's choices is real (SDK, CLI, MCP over HTTP, approvals, Postgres), which catches integration bugs a mocked SDK
+would hide. It found two: resume needs a stable working directory, because the session-store key derives from the
+cwd; and the CLI merges tool rounds in the history it sends. Model quality still needs live evaluation.
+
 ## Not yet decided by implementation
-Why the Claude Agent SDK, and why ECS instead of Kubernetes, are deferred to the phases that implement them.
+Why ECS instead of Kubernetes is deferred to the deployment phase.

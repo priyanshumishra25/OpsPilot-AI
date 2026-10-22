@@ -17,14 +17,21 @@ implemented and verified; nothing else should be assumed to exist.
 | 0 | Monorepo, Docker Compose stack, Postgres/pgvector schema + migrations, API + frontend shell, CI | **done** |
 | 1 | Production RAG: ingestion worker, chunking, embeddings, hybrid retrieval, reranking, permissions, grounded generation with verifiable citations, golden-set evaluation | **done** (generation verified only against a scripted test double, see below) |
 | 2 | MCP servers (knowledge, GitHub, observability, operations), demo environment with real telemetry, approval state machine | **done**; GitHub code search unverified (needs a token) |
-| 3 | Claude Agent SDK incident investigation | not started |
-| 4 | Approval UI and agent-driven remediation | backend done in Phase 2; UI and agent handoff not started |
+| 3 | Claude Agent SDK investigation agent (sessions, streaming, budgets, structured reports) | **built; not verified against the live model** (no API key) |
+| 4 | Approval UI and agent-driven remediation handoff | **done** (UI verified end to end with a human approver) |
+| 5 | Remaining product UI (evaluations, settings) | partially done: Investigate, Incidents, Approvals, Integrations pages exist |
 | 5–8 | Full product UI, hardening, AWS/Terraform deployment, final evaluation | not started |
 
 **Phase 2 verification:** the four MCP servers were exercised by the official MCP Inspector CLI (an independent
 client) against the live stack through a complete incident: detection, logs, commit diff, runbook retrieval,
 rollback request, refusal before approval, human approval, single execution, refusal on replay, and recovery in
 Prometheus. See [docs/INCIDENT_DEMO.md](docs/INCIDENT_DEMO.md) and [docs/MCP_TOOLS.md](docs/MCP_TOOLS.md).
+
+**Phase 3 verification (without a model):** the agent runs on the real Claude Agent SDK and its bundled CLI, against
+the real MCP servers, approvals and Postgres. Tests replace only the model with a scripted Messages API test double
+(`backend/tests/fake_anthropic.py`). This verifies orchestration: tool permissions, budgets, approval handoff,
+resume from Postgres after local state is deleted, cancellation, and refusal of an injection-obeying model. It does
+not verify investigation quality, which needs a live model and has not been measured.
 
 **Unverified external integration:** no Anthropic API key was available while building, so answer
 generation has been exercised only through a scripted test double of the SDK's streaming interface
@@ -106,7 +113,8 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for module boundaries and data flow, and
 
 ## Quick start
 
-Requirements: Docker with Compose v2, about 4 GB of free memory, and network access on the first run
+Requirements: Docker with Compose v2 and about 6 GB of memory for Docker (the full stack runs 18 containers,
+including two ONNX models and steady synthetic traffic), and network access on the first run
 to download the embedding and reranker models (about 150 MB).
 
 ```bash
@@ -171,6 +179,8 @@ obeying it. Details: [SECURITY.md](SECURITY.md), [THREAT_MODEL.md](THREAT_MODEL.
 - GitHub repository *ingestion* into the knowledge base, the agent, the approval UI, Terraform and deployment are
   not built yet. GitHub code search via the REST provider needs a token and is unverified.
 - Health classification uses 5-minute windows, so it lags recovery by up to 5 minutes.
+- On a 16 GB laptop, running the full stack *and* the backend test suite at the same time can push the machine
+  into heavy swapping. Stop the stack (`docker compose stop`) or point tests at it (see CONTRIBUTING.md).
 
 ## Repository layout
 

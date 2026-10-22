@@ -143,7 +143,31 @@ snapshot taken at request time before deploying with compare-and-swap.
 - **git history**: `demo/repos/build_repos.py` builds the services' repositories with fixed authors and dates, so
   commit SHAs are identical everywhere.
 
+## Agent (`agent/`)
+
+```
+UI --POST /agent/sessions--> API --(user_message event + queue)--> agent-worker
+agent-worker: ClaudeSDKClient(tools=[], setting_sources=[], strict MCP config, permission_mode=dontAsk,
+              allowed_tools=<role policy>, disallowed_tools=<everything else>, output_format=TurnOutput schema,
+              PreToolUse budget hook, session_store=Postgres, resume=<sdk session id>)
+   --> bundled Claude Code CLI --> Anthropic API
+   --> MCP servers over HTTP with per-user, per-session tool tokens (TTL = turn time budget)
+events (assistant text, tool calls/results, approvals, report, usage) --> agent_events (Postgres) --> SSE (Redis wake-up)
+```
+
+- **Isolation:** no built-in tools (no shell, files or web), no user or project settings, a per-session working
+  directory with no project files.
+- **Budgets:** `max_turns`, `max_budget_usd`, a wall-clock limit (interrupts the turn), and a tool-call cap
+  enforced by a `PreToolUse` hook.
+- **Durability:** SDK transcripts are mirrored to `agent_transcript_entries` through a `SessionStore`
+  implementation that passes the SDK's conformance suite. A turn can therefore resume on any worker.
+- **Output:** the turn ends with the SDK's `StructuredOutput` tool against `TurnOutput` (answer and an optional
+  `IncidentReport`). The runner validates it, checks each evidence item against tool calls that actually succeeded,
+  persists the incident, links any approvals it requested, and marks the session `awaiting_approval` while one is
+  open. Thinking blocks are never recorded or shown.
+- **Recovery:** a worker restart fails in-flight turns explicitly; side effects are approval-gated anyway.
+
 ## Planned (not implemented)
 
-Claude Agent SDK investigation sessions, the approval and integrations UI, the OpenTelemetry collector,
+Evaluations and settings pages, the OpenTelemetry collector,
 Terraform for AWS (ECS Fargate, RDS, S3, SQS, Secrets Manager), and a deployment workflow with GitHub OIDC.

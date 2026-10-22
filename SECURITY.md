@@ -7,7 +7,7 @@ Please report vulnerabilities privately to the repository owner rather than open
 
 | Area | Control | Where | Tested in |
 |---|---|---|---|
-| Authentication | Argon2id hashing; constant-shape failures (unknown user verifies against a dummy hash, same error message) | `auth/passwords.py`, `auth/service.py` | `test_api.py::test_auth_required_and_login_failures` |
+| Authentication | Argon2id hashing with explicit OWASP-minimum parameters (19 MiB, t=2, p=1), run off the event loop, hashes upgraded on login; constant-shape failures (unknown user verifies against a dummy hash, same error message) | `auth/passwords.py`, `auth/service.py` | `test_api.py::test_auth_required_and_login_failures` |
 | Tokens | HS256 JWT with `iss`, `aud`, `exp`, `nbf`, `jti` required; 30 min default TTL; `alg=none` and wrong key/audience rejected; secret ≥ 32 chars; local dev secret refused outside `environment=local` | `auth/tokens.py`, `config.py` | `test_core_units.py` |
 | Authorisation | Role → permission map evaluated server-side; roles and scopes loaded from the membership row on every request, never from the token or body | `auth/principal.py`, `api/deps.py` | `test_api.py`, `test_ingestion.py` |
 | Tenant isolation | `workspace_id` predicate in every query; `X-Workspace-Id` is checked against membership (403 if not a member) | repositories and routes | `test_retrieval_isolation.py` (dense, lexical, hybrid), `test_api.py` |
@@ -23,6 +23,7 @@ Please report vulnerabilities privately to the repository owner rather than open
 | MCP authorisation | Identity only from the verified token; membership re-resolved per call (knowledge, operations); per-tool scope checks; repository allow-list per workspace | `mcpservers/*` | `test_revoked_membership_takes_effect_before_token_expiry`, `test_allow_list_and_tenant_restrictions` |
 | MCP input safety | SDK schema validation; server-side PromQL/LogQL templates; git refs, paths and SHAs validated, no shell; GitHub search qualifiers rejected; output size bounds; per-tool timeouts | `observability.py`, `repos.py`, `common.py` | `test_query_injection_and_bounds`, `test_injection_attempts_rejected` |
 | Privileged actions | Approval state machine (atomic transitions, argument hash binding, one-time execution id, expiry, approver ≠ requester), live target revalidation, compare-and-swap deploy, deploy token held only by `mcp-operations`, demo environment only | `approvals/service.py`, `mcpservers/operations.py` | `test_mcp_operations.py` (8 tests incl. concurrency) |
+| Agent containment | No built-in tools, no local settings, MCP-only tools filtered by role (others removed from context), `dontAsk` permission mode, per-session tool tokens, turn/time/cost/tool-call budgets; refuses to start without a configured model key | `agent/runner.py`, `agent/policy.py` | `test_agent.py` (viewer tool set, budget, injection-obeying model, cancellation) |
 | Supply chain | Lockfiles committed; `pip-audit`, `npm audit`, gitleaks and bandit in CI; non-root containers | `.github/workflows/ci.yml`, Dockerfiles | CI (not yet run on GitHub) |
 
 ## Known gaps (tracked)
