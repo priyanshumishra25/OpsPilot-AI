@@ -37,7 +37,7 @@ def free_port() -> int:
 async def running(mcp: MCPServer, port: int) -> AsyncIterator[str]:
     from opspilot.mcpservers.common import instrumented_app
 
-    app = instrumented_app(mcp)
+    app = instrumented_app(mcp, "127.0.0.1")
     server = uvicorn.Server(
         uvicorn.Config(app, host="127.0.0.1", port=port, log_level="warning", timeout_graceful_shutdown=2)
     )

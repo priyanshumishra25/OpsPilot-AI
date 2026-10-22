@@ -111,6 +111,8 @@ class Settings(BaseSettings):
     mcp_observability_url: str = "http://mcp-observability:8103/mcp"
     mcp_operations_url: str = "http://mcp-operations:8104/mcp"
     mcp_tool_timeout_seconds: float = 20.0
+    # Address the MCP servers listen on. Loopback by default; containers set 0.0.0.0 explicitly.
+    mcp_bind_host: str = "127.0.0.1"
 
     # GitHub MCP server. Repositories allow-list as JSON: {"owner/name": {"provider": "github"} |
     # {"provider": "local", "path": "/repos/orders-api"}}

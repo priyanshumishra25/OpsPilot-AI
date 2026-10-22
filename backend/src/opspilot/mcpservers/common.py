@@ -21,6 +21,7 @@ from pydantic import AnyHttpUrl
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 
+from opspilot.config import Settings
 from opspilot.errors import (
     ConflictError,
     NotFoundError,
@@ -148,18 +149,24 @@ def create_server(
     return mcp
 
 
-def instrumented_app(mcp: MCPServer) -> Any:
-    """Streamable HTTP app wrapped so incoming W3C trace context is extracted and tool spans join the caller's trace."""
+def instrumented_app(mcp: MCPServer, host: str) -> Any:
+    """Streamable HTTP app wrapped so incoming W3C trace context is extracted and tool spans join the caller's trace.
+
+    ``host`` is the bind address. On loopback the SDK also enables DNS-rebinding protection (Host header must be
+    localhost); in a container the servers bind all interfaces and are reached by service name, with network
+    isolation provided by the Compose network / security groups and authentication by the tool token.
+    """
     from opentelemetry.instrumentation.asgi import OpenTelemetryMiddleware
 
     return OpenTelemetryMiddleware(
-        mcp.streamable_http_app(stateless_http=True, json_response=True, host="0.0.0.0"),  # noqa: S104
+        mcp.streamable_http_app(stateless_http=True, json_response=True, host=host),
         excluded_urls="healthz",
     )
 
 
-def serve(mcp: MCPServer, port: int, service_name: str) -> None:
+def serve(mcp: MCPServer, settings: Settings, port: int, service_name: str) -> None:
     from opspilot.observability.tracing import configure_tracing
 
     configure_tracing(service_name)
-    uvicorn.run(instrumented_app(mcp), host="0.0.0.0", port=port, log_level="warning", timeout_graceful_shutdown=10)  # noqa: S104
+    host = settings.mcp_bind_host
+    uvicorn.run(instrumented_app(mcp, host), host=host, port=port, log_level="warning", timeout_graceful_shutdown=10)

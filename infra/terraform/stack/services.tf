@@ -30,6 +30,7 @@ locals {
     OPSPILOT_MCP_GITHUB_URL            = "http://mcp-github:8102/mcp"
     OPSPILOT_MCP_OBSERVABILITY_URL     = "http://mcp-observability:8103/mcp"
     OPSPILOT_MCP_OPERATIONS_URL        = "http://mcp-operations:8104/mcp"
+    OPSPILOT_MCP_BIND_HOST             = "0.0.0.0"
     OPSPILOT_CONTROL_PLANE_URL         = "http://control-plane:8090"
     OPSPILOT_PROMETHEUS_URL            = "http://prometheus:9090"
     OPSPILOT_LOKI_URL                  = "http://loki:3100"

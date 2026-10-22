@@ -361,7 +361,7 @@ def _iso(d: datetime) -> str:
 def main() -> None:
     settings = get_settings()
     configure_logging(settings.log_level, "opspilot-mcp-operations")
-    serve(build(settings), 8104, "opspilot-mcp-operations")
+    serve(build(settings), settings, 8104, "opspilot-mcp-operations")
 
 
 if __name__ == "__main__":

@@ -16,6 +16,7 @@ x-backend-env: &backend-env
   OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
   OPSPILOT_RATE_LIMIT_LOGIN_PER_MINUTE: ${OPSPILOT_RATE_LIMIT_LOGIN_PER_MINUTE:-10}
   OPSPILOT_MCP_VERIFY_PUBLIC_KEY: ${OPSPILOT_MCP_VERIFY_PUBLIC_KEY:?set in .env}
+  OPSPILOT_MCP_BIND_HOST: 0.0.0.0
   OPSPILOT_CONTROL_PLANE_READ_TOKEN: ${CONTROL_PLANE_READ_TOKEN}
   OPSPILOT_GITHUB_REPOSITORIES: '{"opspilot-demo/orders-api": {"provider": "local", "path": "/repos/orders-api", "workspaces": "*"}, "opspilot-demo/checkout-api": {"provider": "local", "path": "/repos/checkout-api", "workspaces": "*"}}'
 
@@ -152,6 +153,7 @@ services:
     environment:
       OPSPILOT_MCP_VERIFY_PUBLIC_KEY: ${OPSPILOT_MCP_VERIFY_PUBLIC_KEY}
       OPSPILOT_JWT_SECRET: ${OPSPILOT_JWT_SECRET}
+      OPSPILOT_MCP_BIND_HOST: 0.0.0.0
       OPSPILOT_GITHUB_TOKEN: ${GITHUB_TOKEN:-}
       OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
       OPSPILOT_GITHUB_REPOSITORIES: '{"opspilot-demo/orders-api": {"provider": "local", "path": "/repos/orders-api", "workspaces": "*"}, "opspilot-demo/checkout-api": {"provider": "local", "path": "/repos/checkout-api", "workspaces": "*"}}'
@@ -164,6 +166,7 @@ services:
     environment:
       OPSPILOT_MCP_VERIFY_PUBLIC_KEY: ${OPSPILOT_MCP_VERIFY_PUBLIC_KEY}
       OPSPILOT_JWT_SECRET: ${OPSPILOT_JWT_SECRET}
+      OPSPILOT_MCP_BIND_HOST: 0.0.0.0
       OPSPILOT_CONTROL_PLANE_READ_TOKEN: ${CONTROL_PLANE_READ_TOKEN}
       OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
     depends_on: [prometheus, loki, control-plane]

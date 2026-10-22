@@ -146,7 +146,7 @@ def build(settings: Settings, registry: RepositoryRegistry | None = None) -> MCP
 def main() -> None:
     settings = get_settings()
     configure_logging(settings.log_level, "opspilot-mcp-github")
-    serve(build(settings), 8102, "opspilot-mcp-github")
+    serve(build(settings), settings, 8102, "opspilot-mcp-github")
 
 
 if __name__ == "__main__":
