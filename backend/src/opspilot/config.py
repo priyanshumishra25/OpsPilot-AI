@@ -64,7 +64,6 @@ class Settings(BaseSettings):
     max_pdf_pages: int = 500
 
     # Embeddings / retrieval
-    embedding_provider: Literal["fastembed"] = "fastembed"
     embedding_model: str = "BAAI/bge-small-en-v1.5"
     embedding_dim: int = 384
     embedding_cache_dir: str | None = None
