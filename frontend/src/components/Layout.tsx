@@ -1,13 +1,17 @@
 import clsx from "clsx";
-import { BookOpenText, LayoutDashboard, LogOut, MessageSquareText, Moon, ScrollText, Sun } from "lucide-react";
+import { BookOpenText, Bot, FileWarning, LayoutDashboard, LogOut, MessageSquareText, Moon, PlugZap, ScrollText, ShieldCheck, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 import { NavLink, Outlet } from "react-router";
 import { useAuth } from "../lib/auth";
 
 const NAV = [
   { to: "/", label: "Overview", icon: LayoutDashboard, end: true },
+  { to: "/investigate", label: "Investigate", icon: Bot },
   { to: "/ask", label: "Ask", icon: MessageSquareText },
+  { to: "/incidents", label: "Incidents", icon: FileWarning },
+  { to: "/approvals", label: "Approvals", icon: ShieldCheck },
   { to: "/knowledge", label: "Knowledge Base", icon: BookOpenText },
+  { to: "/integrations", label: "Integrations", icon: PlugZap },
   { to: "/activity", label: "Activity", icon: ScrollText, permission: "audit:read" },
 ] as const;
 

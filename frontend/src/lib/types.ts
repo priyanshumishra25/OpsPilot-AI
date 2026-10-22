@@ -164,3 +164,100 @@ export interface AuditEntry {
   trace_id: string | null;
   created_at: string;
 }
+
+export type AgentStatus = "queued" | "running" | "completed" | "awaiting_approval" | "failed" | "cancelled";
+
+export interface AgentEvent {
+  seq: number;
+  turn: number;
+  type: string;
+  payload: Record<string, unknown>;
+  created_at: string;
+}
+
+export interface AgentSessionSummary {
+  id: string;
+  title: string;
+  status: AgentStatus;
+  model: string;
+  turns: number;
+  tool_calls: number;
+  usage: Partial<Usage> & { estimated_cost_usd?: number };
+  answer: string | null;
+  report: IncidentReport | null;
+  incident_id: string | null;
+  approval_ids: string[];
+  error: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AgentSessionDetail extends AgentSessionSummary {
+  events: AgentEvent[];
+}
+
+export interface EvidenceRef { id: string; kind: string; source: string; observation: string }
+export interface TimelineEntry { time: string; event: string; evidence: string[] }
+export interface CandidateCause { cause: string; assessment: "likely" | "possible" | "unlikely" | "ruled_out"; supporting_evidence: string[]; contradicting_evidence: string[] }
+export interface RecommendedAction { action: string; rationale: string; risk: "low" | "medium" | "high"; requires_approval: boolean; evidence: string[] }
+
+export interface IncidentReport {
+  incident_summary: string;
+  observed_symptoms: string[];
+  relevant_services: string[];
+  evidence: EvidenceRef[];
+  timeline: TimelineEntry[];
+  candidate_causes: CandidateCause[];
+  most_likely_cause: string | null;
+  confidence: { evidence_strength: "strong" | "moderate" | "weak"; explanation: string };
+  missing_information: string[];
+  recommended_actions: RecommendedAction[];
+  risk_assessment: string;
+}
+
+export interface Incident {
+  id: string;
+  title: string;
+  severity: string;
+  status: string;
+  service: string | null;
+  summary: string;
+  report: IncidentReport;
+  created_by: string | null;
+  created_at: string;
+}
+
+export interface Approval {
+  id: string;
+  action: string;
+  tool_name: string;
+  arguments: Record<string, unknown>;
+  target_resource: string;
+  target_state: Record<string, unknown>;
+  expected_impact: string;
+  reason: string;
+  incident_id: string | null;
+  status: "pending" | "approved" | "rejected" | "expired" | "executing" | "succeeded" | "failed";
+  requested_by: string;
+  decided_by: string | null;
+  requested_by_name: string | null;
+  decided_by_name: string | null;
+  decision_note: string | null;
+  result: { message?: string; verified_current_version?: string | null } & Record<string, unknown>;
+  expires_at: string;
+  created_at: string;
+  decided_at: string | null;
+  finished_at: string | null;
+  can_decide: boolean;
+}
+
+export interface IntegrationStatus {
+  servers: { server: string; status: "connected" | "unavailable"; error?: string; tools: { name: string; description: string }[] }[];
+  github: { token_configured: boolean; repositories: string[] };
+}
+
+export interface DemoState {
+  environment: string;
+  scenarios: { name: string; description: string }[];
+  services: { service: string; current_version: string; commit_sha: string; deployed_at: string; deployed_by: string; active_faults: Record<string, unknown>; scenario: string | null }[];
+}
