@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from anthropic import AsyncAnthropic
 from redis.asyncio import Redis
 
+from opspilot.agent.service import AGENT_STREAM, AgentService
 from opspilot.approvals.service import ApprovalService
 from opspilot.auth.tokens import TokenService
 from opspilot.config import Settings
@@ -44,6 +45,7 @@ class Container:
     chunker: Chunker
     approvals: ApprovalService
     mcp: McpGateway | None = None
+    agent: AgentService | None = None
     control_plane_admin: ControlPlaneClient | None = None
 
     async def close(self) -> None:
@@ -134,6 +136,16 @@ def build_container(settings: Settings) -> Container:
             require_distinct_approver=settings.approval_require_distinct_approver,
         ),
         mcp=_build_gateway(settings),
+        agent=(
+            AgentService(
+                db,
+                redis,
+                RedisStreamQueue(Redis.from_url(settings.redis_url), stream=AGENT_STREAM, group="agent-workers"),
+                model=settings.agent_model,
+            )
+            if settings.mcp_signing_private_key
+            else None
+        ),
         control_plane_admin=(
             ControlPlaneClient(settings.control_plane_url, settings.control_plane_admin_token.get_secret_value())
             if settings.control_plane_admin_token

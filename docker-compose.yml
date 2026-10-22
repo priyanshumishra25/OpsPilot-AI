@@ -113,6 +113,18 @@ services:
     depends_on:
       migrate: {condition: service_completed_successfully}
 
+  # Runs agent turns (Claude Agent SDK + bundled CLI). Holds the model API key and the MCP signing key;
+  # has no built-in tools enabled and reaches only the MCP servers.
+  agent-worker:
+    build: ./backend
+    command: ["python", "-m", "opspilot.cli", "agent-worker"]
+    environment:
+      <<: *backend-env
+      OPSPILOT_MCP_SIGNING_PRIVATE_KEY: ${OPSPILOT_MCP_SIGNING_PRIVATE_KEY}
+    stop_grace_period: 60s
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+
   frontend:
     build:
       context: ./frontend

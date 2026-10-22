@@ -21,6 +21,7 @@ from sqlalchemy import (
     Text,
     UniqueConstraint,
     func,
+    text,
 )
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB, TSVECTOR, UUID
 from sqlalchemy.orm import Mapped, mapped_column
@@ -313,3 +314,75 @@ class Approval(Base):
     decided_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     execution_started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class AgentSessionStatus(enum.StrEnum):
+    QUEUED = "queued"
+    RUNNING = "running"
+    COMPLETED = "completed"
+    AWAITING_APPROVAL = "awaiting_approval"
+    FAILED = "failed"
+    CANCELLED = "cancelled"
+
+
+class AgentSession(TimestampMixin, Base):
+    """One investigation conversation. Turns are run by the agent worker; the SDK transcript is mirrored to
+    `agent_transcript_entries` so a session can be resumed by any worker."""
+
+    __tablename__ = "agent_sessions"
+    __table_args__ = (Index("ix_agent_sessions_workspace_user", "workspace_id", "user_id", "created_at"),)
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=_uuid)
+    workspace_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("workspaces.id", ondelete="CASCADE"))
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    title: Mapped[str] = mapped_column(String(300))
+    status: Mapped[AgentSessionStatus] = mapped_column(_enum(AgentSessionStatus, "agent_session_status"))
+    sdk_session_id: Mapped[str | None] = mapped_column(String(64))
+    model: Mapped[str] = mapped_column(String(100))
+    turns: Mapped[int] = mapped_column(Integer, default=0)
+    tool_calls: Mapped[int] = mapped_column(Integer, default=0)
+    usage: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)
+    report: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
+    answer: Mapped[str | None] = mapped_column(Text)
+    incident_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("incidents.id", ondelete="SET NULL"))
+    approval_ids: Mapped[list[str]] = mapped_column(ARRAY(String(36)), default=list)
+    error: Mapped[str | None] = mapped_column(Text)
+    cancel_requested: Mapped[bool] = mapped_column(default=False)
+
+
+class AgentEvent(Base):
+    """Observable workflow events (never hidden reasoning): messages, tool calls/results, approvals, usage."""
+
+    __tablename__ = "agent_events"
+    __table_args__ = (UniqueConstraint("session_id", "seq"),)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    session_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("agent_sessions.id", ondelete="CASCADE"), index=True)
+    seq: Mapped[int] = mapped_column(Integer)
+    turn: Mapped[int] = mapped_column(Integer)
+    type: Mapped[str] = mapped_column(String(40))
+    payload: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class AgentTranscriptEntry(Base):
+    """Claude Agent SDK SessionStore mirror (one row per JSONL transcript entry)."""
+
+    __tablename__ = "agent_transcript_entries"
+    __table_args__ = (
+        Index("ix_agent_transcript_key", "project_key", "session_id", "subpath", "id"),
+        Index(
+            "uq_agent_transcript_uuid",
+            "project_key",
+            "session_id",
+            "subpath",
+            "entry_uuid",
+            unique=True,
+            postgresql_where=text("entry_uuid IS NOT NULL"),
+        ),
+    )
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    project_key: Mapped[str] = mapped_column(String(256))
+    session_id: Mapped[str] = mapped_column(String(64))
+    subpath: Mapped[str] = mapped_column(String(256), default="")
+    entry_uuid: Mapped[str | None] = mapped_column(String(64))
+    entry: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

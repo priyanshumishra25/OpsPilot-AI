@@ -117,11 +117,44 @@ class Settings(BaseSettings):
     control_plane_deploy_token: SecretStr | None = None
     control_plane_admin_token: SecretStr | None = None
 
+    # Agent (Claude Agent SDK)
+    agent_model: str = "claude-opus-5-5"
+    agent_effort: Literal["low", "medium", "high", "xhigh", "max"] = "high"
+    agent_max_turns: int = 30
+    agent_max_tool_calls: int = 25
+    agent_time_budget_seconds: int = 600
+    agent_max_budget_usd: float = 3.0
+    # Optional override of the Anthropic API base URL for the agent subprocess (e.g. an egress proxy).
+    anthropic_base_url: str | None = None
+
     approval_ttl_seconds: int = 1800
     approval_require_distinct_approver: bool = True
 
     rate_limit_login_per_minute: int = 10
     rate_limit_query_per_minute: int = 60
+    rate_limit_agent_per_minute: int = 10
+    agent_worker_concurrency: int = 2
+
+    @field_validator(
+        "anthropic_api_key",
+        "github_token",
+        "s3_access_key_id",
+        "s3_secret_access_key",
+        "mcp_signing_private_key",
+        "control_plane_read_token",
+        "control_plane_deploy_token",
+        "control_plane_admin_token",
+        "mcp_verify_public_key",
+        "anthropic_base_url",
+        "sqs_queue_url",
+        "sqs_dlq_url",
+        "s3_endpoint_url",
+        mode="before",
+    )
+    @classmethod
+    def _empty_is_unset(cls, v: object) -> object:
+        # Compose passes unset variables as "", which must mean "not configured", not an empty credential.
+        return None if isinstance(v, str) and not v.strip() else v
 
     @field_validator("jwt_secret")
     @classmethod

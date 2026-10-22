@@ -9,7 +9,7 @@ import sys
 
 from sqlalchemy import select
 
-from opspilot.auth.passwords import hash_password
+from opspilot.auth.passwords import ahash_password
 from opspilot.config import get_settings
 from opspilot.container import build_container
 from opspilot.db.models import Membership, Role, User, Workspace
@@ -44,6 +44,51 @@ async def run_worker(concurrency: int) -> None:
         await c.close()
 
 
+async def run_agent_worker() -> None:
+    from redis.asyncio import Redis
+
+    from opspilot.agent.runner import AgentRunner
+    from opspilot.agent.service import AGENT_STREAM
+    from opspilot.agent.worker import AgentWorker
+    from opspilot.mcpservers.tokens import ToolTokenIssuer
+    from opspilot.queue.redis_streams import RedisStreamQueue
+    from opspilot.rag.cost import ModelPricing
+
+    settings = get_settings()
+    configure_tracing("opspilot-agent-worker")
+    if settings.mcp_signing_private_key is None:
+        sys.exit("OPSPILOT_MCP_SIGNING_PRIVATE_KEY is required")
+    c = build_container(settings)
+    pricing = ModelPricing(
+        settings.agent_model,
+        settings.model_input_price_per_mtok,
+        settings.model_output_price_per_mtok,
+        settings.model_cache_read_price_per_mtok,
+        settings.model_cache_write_price_per_mtok,
+    )
+    runner = AgentRunner(
+        settings, c.db, c.redis, ToolTokenIssuer(settings.mcp_signing_private_key.get_secret_value()), pricing
+    )
+    queue = RedisStreamQueue(
+        Redis.from_url(settings.redis_url),
+        stream=AGENT_STREAM,
+        group="agent-workers",
+        claim_idle_ms=(settings.agent_time_budget_seconds + 120) * 1000,
+    )
+    worker = AgentWorker(
+        c.db,
+        queue,
+        runner,
+        concurrency=settings.agent_worker_concurrency,
+        stale_after_seconds=settings.agent_time_budget_seconds * 2,
+    )
+    try:
+        await worker.run_forever()
+    finally:
+        await queue.close()
+        await c.close()
+
+
 async def bootstrap() -> None:
     """Create the object-store bucket (local MinIO only) and warm model caches."""
     c = build_container(get_settings())
@@ -71,11 +116,11 @@ async def create_user(email: str, name: str, password: str, workspace: str, role
                 await s.flush()
             user = await s.scalar(select(User).where(User.email == email.lower()))
             if user is None:
-                user = User(email=email.lower(), display_name=name, password_hash=hash_password(password))
+                user = User(email=email.lower(), display_name=name, password_hash=await ahash_password(password))
                 s.add(user)
                 await s.flush()
             else:
-                user.password_hash = hash_password(password)
+                user.password_hash = await ahash_password(password)
             m = await s.scalar(
                 select(Membership).where(Membership.user_id == user.id, Membership.workspace_id == ws.id)
             )
@@ -163,6 +208,7 @@ def main() -> None:
     w = sub.add_parser("worker", help="Run the ingestion worker")
     w.add_argument("--concurrency", type=int, default=int(os.environ.get("OPSPILOT_WORKER_CONCURRENCY", "2")))
     sub.add_parser("bootstrap", help="Create local bucket and warm model caches")
+    sub.add_parser("agent-worker", help="Run the agent worker (Claude Agent SDK turns)")
     u = sub.add_parser("create-user", help="Create or update a user and workspace membership")
     u.add_argument("--email", required=True)
     u.add_argument("--name", required=True)
@@ -182,6 +228,8 @@ def main() -> None:
     args = p.parse_args()
     if args.cmd == "worker":
         asyncio.run(run_worker(args.concurrency))
+    elif args.cmd == "agent-worker":
+        asyncio.run(run_agent_worker())
     elif args.cmd == "bootstrap":
         asyncio.run(bootstrap())
     elif args.cmd == "create-user":

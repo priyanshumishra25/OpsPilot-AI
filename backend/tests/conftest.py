@@ -4,6 +4,9 @@ OPSPILOT_TEST_DATABASE_URL / OPSPILOT_TEST_REDIS_URL point at existing instances
 from __future__ import annotations
 
 import os
+
+# Cheap Argon2 parameters for tests only; must be set before opspilot.auth.passwords is imported.
+os.environ.setdefault("OPSPILOT_ARGON2_PROFILE", "test")
 import subprocess
 import sys
 import uuid
@@ -19,7 +22,7 @@ from sqlalchemy import text
 
 from opspilot.api.app import create_app
 from opspilot.approvals.service import ApprovalService
-from opspilot.auth.passwords import hash_password
+from opspilot.auth.passwords import ahash_password
 from opspilot.auth.principal import Principal
 from opspilot.auth.tokens import TokenService
 from opspilot.config import Settings
@@ -172,7 +175,7 @@ async def make_member(
             s.add(w)
             await s.flush()
             ws = w.id
-        user = User(email=email, display_name=email.split("@")[0], password_hash=hash_password(TEST_PASSWORD))
+        user = User(email=email, display_name=email.split("@")[0], password_hash=await ahash_password(TEST_PASSWORD))
         s.add(user)
         await s.flush()
         m = Membership(user_id=user.id, workspace_id=ws, role=role, access_scopes=scopes or ["general"])

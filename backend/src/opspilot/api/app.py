@@ -11,7 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 
 from opspilot.api.errors import install_error_handlers
-from opspilot.api.routes import auth, documents, health, operations, query
+from opspilot.api.routes import agent, auth, documents, health, operations, query
 from opspilot.config import Settings, get_settings
 from opspilot.container import Container, build_container
 from opspilot.logging import configure_logging, get_logger
@@ -81,7 +81,7 @@ def create_app(settings: Settings | None = None, container: Container | None = N
         return response
 
     install_error_handlers(app)
-    for r in (health.router, auth.router, documents.router, query.router, operations.router):
+    for r in (health.router, auth.router, documents.router, query.router, operations.router, agent.router):
         app.include_router(r)
     FastAPIInstrumentor.instrument_app(app, excluded_urls="healthz,metrics")
     return app

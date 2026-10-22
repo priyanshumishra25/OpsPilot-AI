@@ -41,7 +41,9 @@ class ToolTokenIssuer:
         self._key = load_private_key(private_key_b64)
         self._ttl = ttl_seconds
 
-    def issue(self, principal: Principal, server: str, *, session_id: str | None = None) -> str:
+    def issue(
+        self, principal: Principal, server: str, *, session_id: str | None = None, ttl_seconds: int | None = None
+    ) -> str:
         now = int(time.time())
         claims = {
             "iss": ISSUER,
@@ -54,7 +56,7 @@ class ToolTokenIssuer:
             "sid": session_id,
             "iat": now,
             "nbf": now,
-            "exp": now + self._ttl,
+            "exp": now + (ttl_seconds or self._ttl),
             "jti": uuid.uuid4().hex,
         }
         return jwt.encode(claims, self._key, algorithm="EdDSA")

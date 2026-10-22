@@ -10,12 +10,13 @@ from typing import Annotated, Any
 from fastapi import APIRouter, Query
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from opspilot.api.deps import ContainerDep, PrincipalDep, SessionDep
 from opspilot.audit import record_audit
-from opspilot.auth.principal import Permission
+from opspilot.auth.principal import Permission, Principal
 from opspilot.container import Container
-from opspilot.db.models import Approval, ApprovalStatus, Incident
+from opspilot.db.models import Approval, ApprovalStatus, Incident, User
 from opspilot.errors import NotConfiguredError, NotFoundError
 from opspilot.integrations.control_plane import ControlPlaneClient
 from opspilot.mcp_client.gateway import SERVERS, ServerName
@@ -44,6 +45,9 @@ class ApprovalOut(BaseModel):
     decided_at: datetime | None
     execution_started_at: datetime | None
     finished_at: datetime | None
+    requested_by_name: str | None = None
+    decided_by_name: str | None = None
+    can_decide: bool = False
 
 
 class DecisionIn(BaseModel):
@@ -63,13 +67,28 @@ class IncidentOut(BaseModel):
     created_at: datetime
 
 
+async def _with_people(session: AsyncSession, principal: Principal, approvals: list[Approval]) -> list[ApprovalOut]:
+    ids = {a.requested_by for a in approvals} | {a.decided_by for a in approvals if a.decided_by}
+    rows = (await session.execute(select(User.id, User.display_name).where(User.id.in_(ids)))).all() if ids else []
+    names = {uid: name for uid, name in rows}
+    can = Permission.APPROVALS_DECIDE in principal.permissions
+    out = []
+    for a in approvals:
+        o = ApprovalOut.model_validate(a)
+        o.requested_by_name = names.get(a.requested_by)
+        o.decided_by_name = names.get(a.decided_by) if a.decided_by else None
+        o.can_decide = can and a.status == ApprovalStatus.PENDING and a.requested_by != principal.user_id
+        out.append(o)
+    return out
+
+
 @router.get("/approvals", response_model=list[ApprovalOut])
 async def list_approvals(
     principal: PrincipalDep,
     container: ContainerDep,
     session: SessionDep,
     status: Annotated[ApprovalStatus | None, Query()] = None,
-) -> list[Approval]:
+) -> list[ApprovalOut]:
     principal.require(Permission.QUERY)
     await container.approvals.expire_stale(session, principal.workspace_id)
     await session.commit()
@@ -81,17 +100,17 @@ async def list_approvals(
     )
     if status:
         stmt = stmt.where(Approval.status == status)
-    return list(await session.scalars(stmt))
+    return await _with_people(session, principal, list(await session.scalars(stmt)))
 
 
 @router.get("/approvals/{approval_id}", response_model=ApprovalOut)
 async def get_approval(
     approval_id: uuid.UUID, principal: PrincipalDep, container: ContainerDep, session: SessionDep
-) -> Approval:
+) -> ApprovalOut:
     principal.require(Permission.QUERY)
     await container.approvals.expire_stale(session, principal.workspace_id)
     await session.commit()
-    return await container.approvals.get(session, principal, approval_id)
+    return (await _with_people(session, principal, [await container.approvals.get(session, principal, approval_id)]))[0]
 
 
 @router.post("/approvals/{approval_id}/approve", response_model=ApprovalOut)
