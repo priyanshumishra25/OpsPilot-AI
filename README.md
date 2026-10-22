@@ -25,7 +25,8 @@ implemented and verified; nothing else should be assumed to exist.
 | 4 | Approval UI and agent-driven remediation handoff | **done** (UI verified end to end with a human approver) |
 | 5 | Full product UI | **done**: Overview, Investigate, Ask, Incidents, Approvals, Knowledge Base, Integrations, Evaluations, Settings, Activity |
 | 6 | Observability and hardening: cross-service tracing (verified in Jaeger), fault injection, Argon2 off the event loop, per-test hard timeouts | **done** |
-| 7–8 | AWS/Terraform deployment, final evaluation | not started |
+| 7 | AWS infrastructure (Terraform), OIDC deploy workflow with migration and rollback | **written and statically validated** (fmt, validate, Checkov 0 failed, actionlint); **not deployed** (no AWS account or authorisation) |
+| 8 | Final evaluation and polish | not started |
 
 **Phase 2 verification:** the four MCP servers were exercised by the official MCP Inspector CLI (an independent
 client) against the live stack through a complete incident: detection, logs, commit diff, runbook retrieval,
@@ -181,8 +182,8 @@ obeying it. Details: [SECURITY.md](SECURITY.md), [THREAT_MODEL.md](THREAT_MODEL.
   was reduced).
 - The golden set is small and was written by the same author as the corpus.
 - No OCR; scanned PDFs are rejected with a clear error.
-- GitHub repository *ingestion* into the knowledge base, the agent, the approval UI, Terraform and deployment are
-  not built yet. GitHub code search via the REST provider needs a token and is unverified.
+- GitHub repository *ingestion* into the knowledge base is not built. The AWS deployment is written but has
+  never been applied. GitHub code search via the REST provider needs a token and is unverified.
 - Health classification uses 5-minute windows, so it lags recovery by up to 5 minutes.
 - On a 16 GB laptop, running the full stack *and* the backend test suite at the same time can push the machine
   into heavy swapping. Stop the stack (`docker compose stop`) or point tests at it (see CONTRIBUTING.md).
