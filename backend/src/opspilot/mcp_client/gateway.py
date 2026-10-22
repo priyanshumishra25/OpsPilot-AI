@@ -10,7 +10,7 @@ from typing import Any, Literal
 import httpx2
 from mcp import Client
 from mcp.client.streamable_http import streamable_http_client
-from opentelemetry import trace
+from opentelemetry import propagate, trace
 
 from opspilot.auth.principal import Principal
 from opspilot.logging import get_logger
@@ -50,7 +50,8 @@ class McpGateway:
 
     def _client(self, principal: Principal, server: ServerName, session_id: str | None) -> Client:
         token = self._issuer.issue(principal, server, session_id=session_id)
-        http = httpx2.AsyncClient(headers={"Authorization": f"Bearer {token}"}, timeout=self._timeout)
+        headers = {"Authorization": f"Bearer {token}", **trace_headers()}
+        http = httpx2.AsyncClient(headers=headers, timeout=self._timeout)
         return Client(streamable_http_client(self._urls[server], http_client=http), read_timeout_seconds=self._timeout)
 
     async def list_tools(self, principal: Principal, server: ServerName) -> list[ToolInfo]:
@@ -97,6 +98,13 @@ class McpGateway:
             text = result.content[0].text if result.content and hasattr(result.content[0], "text") else ""
             return ToolCallOutcome(server, tool, False, error=parse_tool_error(text), duration_ms=_ms(start))
         return ToolCallOutcome(server, tool, True, data=dict(result.structured_content or {}), duration_ms=_ms(start))
+
+
+def trace_headers() -> dict[str, str]:
+    """W3C trace context for the current span, so MCP server spans join the caller's trace."""
+    carrier: dict[str, str] = {}
+    propagate.inject(carrier)
+    return carrier
 
 
 def _ms(start: float) -> float:

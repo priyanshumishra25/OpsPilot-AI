@@ -15,7 +15,7 @@ from opspilot.integrations.control_plane import ControlPlaneClient
 from opspilot.mcpservers import operations
 from opspilot.mcpservers.tokens import ToolTokenIssuer
 from tests.conftest import Env, make_member
-from tests.control_plane_fixture import TOKENS, control_plane_app, transport  # noqa: F401
+from tests.control_plane_fixture import TOKENS, transport
 from tests.mcp_harness import PRIVATE_B64, PUBLIC_B64, client, free_port, payload, running
 
 pytestmark = pytest.mark.integration
@@ -55,7 +55,7 @@ class Ctx:
 
 
 @pytest.fixture
-async def ops(env: Env, control_plane_app: ModuleType):  # type: ignore[no-untyped-def] # noqa: F811
+async def ops(env: Env, control_plane_app: ModuleType):  # type: ignore[no-untyped-def]
     db = env.container.db
     users = {
         "eng": await make_member(db, email="eng@acme.test", workspace_slug="acme", role=Role.ENGINEER),

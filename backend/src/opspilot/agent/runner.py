@@ -35,6 +35,7 @@ from claude_agent_sdk import (
     ToolUseBlock,
     UserMessage,
 )
+from opentelemetry import trace
 from pydantic import ValidationError
 from redis.asyncio import Redis
 from sqlalchemy import select, update
@@ -99,6 +100,14 @@ class AgentRunner:
         }
 
     async def run_turn(self, session_id: uuid.UUID, message_seq: int) -> AgentSessionStatus | None:
+        with trace.get_tracer(__name__).start_as_current_span(
+            "agent.turn", attributes={"agent.session_id": str(session_id), "agent.message_seq": message_seq}
+        ) as span:
+            status = await self._run_turn(session_id, message_seq)
+            span.set_attribute("agent.status", status.value if status else "skipped")
+            return status
+
+    async def _run_turn(self, session_id: uuid.UUID, message_seq: int) -> AgentSessionStatus | None:
         async with self._db.session() as s:
             session: AgentSession | None = await s.scalar(
                 update(AgentSession)

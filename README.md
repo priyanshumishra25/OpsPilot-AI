@@ -24,7 +24,8 @@ implemented and verified; nothing else should be assumed to exist.
 | 3 | Claude Agent SDK investigation agent (sessions, streaming, budgets, structured reports) | **built; not verified against the live model** (no API key) |
 | 4 | Approval UI and agent-driven remediation handoff | **done** (UI verified end to end with a human approver) |
 | 5 | Full product UI | **done**: Overview, Investigate, Ask, Incidents, Approvals, Knowledge Base, Integrations, Evaluations, Settings, Activity |
-| 5–8 | Full product UI, hardening, AWS/Terraform deployment, final evaluation | not started |
+| 6 | Observability and hardening: cross-service tracing (verified in Jaeger), fault injection, Argon2 off the event loop, per-test hard timeouts | **done** |
+| 7–8 | AWS/Terraform deployment, final evaluation | not started |
 
 **Phase 2 verification:** the four MCP servers were exercised by the official MCP Inspector CLI (an independent
 client) against the live stack through a complete incident: detection, logs, commit diff, runbook retrieval,

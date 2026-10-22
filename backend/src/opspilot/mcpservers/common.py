@@ -16,6 +16,7 @@ from mcp.server.auth.middleware.auth_context import get_access_token
 from mcp.server.auth.settings import AuthSettings
 from mcp.server.mcpserver import MCPServer
 from mcp.server.mcpserver.exceptions import ToolError
+from opentelemetry import trace
 from pydantic import AnyHttpUrl
 from starlette.requests import Request
 from starlette.responses import JSONResponse
@@ -80,36 +81,42 @@ def tool_guard(
         @functools.wraps(fn)
         async def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
             ctx = caller()
-            start = time.perf_counter()
-            outcome, code = "success", None
-            try:
-                require_scope(ctx, scope)
-                async with asyncio.timeout(timeout):
-                    return await fn(*args, **kwargs)
-            except ToolError:
-                outcome, code = "error", "tool_error"
-                raise
-            except TimeoutError as exc:
-                outcome, code = "error", "timeout"
-                raise ToolError(_err("timeout", f"Tool exceeded {timeout:.0f}s")) from exc
-            except OpsPilotError as exc:
-                code = next((c for t, c in _CODES if isinstance(exc, t)), "internal_error")
-                outcome = "denied" if code == "permission_denied" else "error"
-                raise ToolError(_err(code, exc.message, **exc.details)) from exc
-            finally:
-                log.info(
-                    "mcp_tool_call",
-                    server=server,
-                    tool=fn.__name__,
-                    user_id=str(ctx.user_id),
-                    workspace_id=str(ctx.workspace_id),
-                    session_id=ctx.session_id,
-                    token_id=ctx.token_id,
-                    arguments=redact(dict(kwargs)),
-                    outcome=outcome,
-                    error_code=code,
-                    duration_ms=round((time.perf_counter() - start) * 1000, 1),
-                )
+            with trace.get_tracer("opspilot.mcp").start_as_current_span(
+                f"mcp.tool {fn.__name__}", attributes={"mcp.server": server, "mcp.tool": fn.__name__}
+            ) as span:
+                start = time.perf_counter()
+                outcome, code = "success", None
+                try:
+                    require_scope(ctx, scope)
+                    async with asyncio.timeout(timeout):
+                        return await fn(*args, **kwargs)
+                except ToolError:
+                    outcome, code = "error", "tool_error"
+                    raise
+                except TimeoutError as exc:
+                    outcome, code = "error", "timeout"
+                    raise ToolError(_err("timeout", f"Tool exceeded {timeout:.0f}s")) from exc
+                except OpsPilotError as exc:
+                    code = next((c for t, c in _CODES if isinstance(exc, t)), "internal_error")
+                    outcome = "denied" if code == "permission_denied" else "error"
+                    raise ToolError(_err(code, exc.message, **exc.details)) from exc
+                finally:
+                    span.set_attribute("mcp.outcome", outcome)
+                    if code:
+                        span.set_attribute("mcp.error_code", code)
+                    log.info(
+                        "mcp_tool_call",
+                        server=server,
+                        tool=fn.__name__,
+                        user_id=str(ctx.user_id),
+                        workspace_id=str(ctx.workspace_id),
+                        session_id=ctx.session_id,
+                        token_id=ctx.token_id,
+                        arguments=redact(dict(kwargs)),
+                        outcome=outcome,
+                        error_code=code,
+                        duration_ms=round((time.perf_counter() - start) * 1000, 1),
+                    )
 
         return wrapper
 
@@ -141,6 +148,18 @@ def create_server(
     return mcp
 
 
-def serve(mcp: MCPServer, port: int) -> None:
-    app = mcp.streamable_http_app(stateless_http=True, json_response=True, host="0.0.0.0")  # noqa: S104
-    uvicorn.run(app, host="0.0.0.0", port=port, log_level="warning", timeout_graceful_shutdown=10)  # noqa: S104
+def instrumented_app(mcp: MCPServer) -> Any:
+    """Streamable HTTP app wrapped so incoming W3C trace context is extracted and tool spans join the caller's trace."""
+    from opentelemetry.instrumentation.asgi import OpenTelemetryMiddleware
+
+    return OpenTelemetryMiddleware(
+        mcp.streamable_http_app(stateless_http=True, json_response=True, host="0.0.0.0"),  # noqa: S104
+        excluded_urls="healthz",
+    )
+
+
+def serve(mcp: MCPServer, port: int, service_name: str) -> None:
+    from opspilot.observability.tracing import configure_tracing
+
+    configure_tracing(service_name)
+    uvicorn.run(instrumented_app(mcp), host="0.0.0.0", port=port, log_level="warning", timeout_graceful_shutdown=10)  # noqa: S104

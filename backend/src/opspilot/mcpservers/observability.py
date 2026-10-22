@@ -365,7 +365,7 @@ def build(
 def main() -> None:
     settings = get_settings()
     configure_logging(settings.log_level, "opspilot-mcp-observability")
-    serve(build(settings), 8103)
+    serve(build(settings), 8103, "opspilot-mcp-observability")
 
 
 if __name__ == "__main__":

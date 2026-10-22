@@ -153,6 +153,7 @@ services:
       OPSPILOT_MCP_VERIFY_PUBLIC_KEY: ${OPSPILOT_MCP_VERIFY_PUBLIC_KEY}
       OPSPILOT_JWT_SECRET: ${OPSPILOT_JWT_SECRET}
       OPSPILOT_GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
       OPSPILOT_GITHUB_REPOSITORIES: '{"opspilot-demo/orders-api": {"provider": "local", "path": "/repos/orders-api", "workspaces": "*"}, "opspilot-demo/checkout-api": {"provider": "local", "path": "/repos/checkout-api", "workspaces": "*"}}'
     volumes: [demorepos:/repos:ro]
     depends_on: {control-plane: {condition: service_healthy}}
@@ -165,6 +166,7 @@ services:
       OPSPILOT_MCP_VERIFY_PUBLIC_KEY: ${OPSPILOT_MCP_VERIFY_PUBLIC_KEY}
       OPSPILOT_JWT_SECRET: ${OPSPILOT_JWT_SECRET}
       OPSPILOT_CONTROL_PLANE_READ_TOKEN: ${CONTROL_PLANE_READ_TOKEN}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
     depends_on: [prometheus, loki, control-plane]
 
   mcp-operations:
@@ -230,6 +232,13 @@ services:
     image: grafana/loki:3.7.9
     ports: ["127.0.0.1:3100:3100"]
     volumes: [lokidata:/loki]
+
+  # Optional trace viewer: `docker compose --profile observability up -d jaeger` and set
+  # OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318 in .env, then restart the backend services.
+  jaeger:
+    image: jaegertracing/jaeger:2.22.0
+    ports: ["127.0.0.1:16686:16686", "127.0.0.1:4318:4318"]
+    profiles: [observability]
 
 volumes:
   pgdata:

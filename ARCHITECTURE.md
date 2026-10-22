@@ -99,7 +99,11 @@ Client disconnects cancel generation. The record is still finalised as `cancelle
 Structured JSON logs with request ID, trace ID and span ID, and recursive redaction of secret-like
 keys and token patterns. OpenTelemetry spans cover HTTP (FastAPI instrumentation), `rag.retrieve`,
 `llm.generate_answer` and `ingestion.process_job`, exported over OTLP when
-`OTEL_EXPORTER_OTLP_ENDPOINT` is set. Prometheus metrics at `/metrics`: HTTP rate and latency,
+`OTEL_EXPORTER_OTLP_ENDPOINT` is set. The MCP gateway injects W3C trace context into every MCP request and
+the servers extract it (ASGI middleware), so one trace covers API request → gateway → MCP server → tool span
+(`mcp.tool <name>`) → retrieval spans. Agent turns get an `agent.turn` root span. Verified live in Jaeger
+(`docker compose --profile observability up -d jaeger`, UI on :16686): a single trace spans `opspilot-api` and
+`opspilot-mcp-knowledge`. Tool calls made by the agent's CLI subprocess are not yet linked to the turn span. Prometheus metrics at `/metrics`: HTTP rate and latency,
 ingestion outcomes and stage durations, retrieval latency, provider-reported LLM tokens, and
 estimated cost. `/readyz` checks the database, Redis, object store and queue.
 
@@ -169,5 +173,5 @@ events (assistant text, tool calls/results, approvals, report, usage) --> agent_
 
 ## Planned (not implemented)
 
-The OpenTelemetry collector,
+Linking agent CLI tool calls into the turn trace,
 Terraform for AWS (ECS Fargate, RDS, S3, SQS, Secrets Manager), and a deployment workflow with GitHub OIDC.

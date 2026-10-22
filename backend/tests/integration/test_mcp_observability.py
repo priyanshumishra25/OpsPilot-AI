@@ -16,7 +16,7 @@ from opspilot.integrations.control_plane import ControlPlaneClient
 from opspilot.mcpservers import observability as obs
 from opspilot.mcpservers.tokens import ToolTokenIssuer
 from tests.conftest import Env, make_member
-from tests.control_plane_fixture import TOKENS, control_plane_app, transport  # noqa: F401
+from tests.control_plane_fixture import TOKENS, transport
 from tests.mcp_harness import PRIVATE_B64, PUBLIC_B64, client, free_port, payload, running
 
 pytestmark = pytest.mark.integration
@@ -95,7 +95,7 @@ def _vec(rows: list[tuple[dict[str, str], float]]) -> httpx.Response:
 
 
 @pytest.fixture
-async def obs_server(env: Env, control_plane_app: ModuleType):  # type: ignore[no-untyped-def] # noqa: F811
+async def obs_server(env: Env, control_plane_app: ModuleType):  # type: ignore[no-untyped-def]
     port = free_port()
     double = TelemetryDouble()
     tel = obs.Telemetry("http://prom.test", "http://loki.test", transport=httpx.MockTransport(double.handler))

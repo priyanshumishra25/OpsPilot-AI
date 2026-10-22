@@ -26,7 +26,7 @@ from opspilot.mcpservers.repos import GitHubRestProvider
 from opspilot.mcpservers.tokens import ToolTokenIssuer
 from opspilot.rag.cost import ModelPricing
 from tests.conftest import Env, make_member
-from tests.control_plane_fixture import ROOT, TOKENS, control_plane_app, transport  # noqa: F401
+from tests.control_plane_fixture import ROOT, TOKENS, transport
 from tests.fake_anthropic import ScriptedModel, fake_anthropic, final, text, tool, tool_results
 from tests.fakes import InMemoryQueue
 from tests.integration.test_mcp_observability import TelemetryDouble
@@ -74,7 +74,7 @@ class AgentHarness:
 
 
 @pytest.fixture
-async def harness(env: Env, control_plane_app: ModuleType, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):  # type: ignore[no-untyped-def] # noqa: F811
+async def harness(env: Env, control_plane_app: ModuleType, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):  # type: ignore[no-untyped-def]
     db = env.container.db
     users = {
         "eng": await make_member(db, email="eng@acme.test", workspace_slug="acme", role=Role.ENGINEER),

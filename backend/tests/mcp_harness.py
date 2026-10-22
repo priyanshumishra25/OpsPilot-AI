@@ -35,7 +35,9 @@ def free_port() -> int:
 
 @asynccontextmanager
 async def running(mcp: MCPServer, port: int) -> AsyncIterator[str]:
-    app = mcp.streamable_http_app(stateless_http=True, json_response=True)
+    from opspilot.mcpservers.common import instrumented_app
+
+    app = instrumented_app(mcp)
     server = uvicorn.Server(
         uvicorn.Config(app, host="127.0.0.1", port=port, log_level="warning", timeout_graceful_shutdown=2)
     )

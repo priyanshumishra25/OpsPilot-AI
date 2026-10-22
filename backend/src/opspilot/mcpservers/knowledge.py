@@ -276,7 +276,7 @@ def _merge_overlapping(parts: list[str]) -> str:
 def main() -> None:
     settings = get_settings()
     configure_logging(settings.log_level, "opspilot-mcp-knowledge")
-    serve(build(settings), 8101)
+    serve(build(settings), 8101, "opspilot-mcp-knowledge")
 
 
 if __name__ == "__main__":

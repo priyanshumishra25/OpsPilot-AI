@@ -37,6 +37,8 @@ from opspilot.rag.generation import GroundedAnswerer
 from opspilot.rag.retriever import HybridRetriever, RetrievalConfig
 from tests.fakes import HashingEmbeddings, InMemoryObjectStore, InMemoryQueue
 
+pytest_plugins = ["tests.control_plane_fixture"]
+
 BACKEND = Path(__file__).resolve().parents[1]
 TEST_JWT_SECRET = "test-only-jwt-secret-0123456789abcdef"
 TEST_PASSWORD = "correct-horse-battery-staple"
