@@ -1,0 +1,121 @@
+name: Deploy
+
+# Application deploys only. Infrastructure is applied by an operator with Terraform (see DEPLOYMENT.md); this
+# workflow's AWS role can push images, run the migration task and roll ECS services, nothing else.
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        type: choice
+        options: [dev, prod]
+        default: dev
+
+permissions:
+  contents: read
+  id-token: write   # GitHub OIDC -> AWS STS
+
+concurrency:
+  group: deploy-${{ inputs.environment }}
+  cancel-in-progress: false
+
+env:
+  ENV: ${{ inputs.environment }}
+  PREFIX: opspilot-${{ inputs.environment }}
+  TAG: ${{ github.sha }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+    environment: ${{ inputs.environment }}   # prod should require reviewers in the GitHub environment settings
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build and push images (immutable tag = commit SHA)
+        env:
+          REGISTRY: ${{ steps.ecr.outputs.registry }}
+        run: |
+          set -euo pipefail
+          push() { docker buildx build --platform linux/arm64 --push -t "$REGISTRY/$PREFIX/$1:$TAG" "${@:2}"; }
+          push backend --build-context demo=demo backend
+          push frontend --build-arg VITE_API_BASE_URL= frontend
+          push demo demo
+          push prometheus demo/prometheus
+
+      - name: Record current task definitions (rollback targets)
+        run: |
+          set -euo pipefail
+          aws ecs list-services --cluster "$PREFIX" --query 'serviceArns[]' --output text | tr '\t' '\n' > services.txt
+          : > previous.txt
+          while read -r svc; do
+            [ -z "$svc" ] && continue
+            td=$(aws ecs describe-services --cluster "$PREFIX" --services "$svc" --query 'services[0].taskDefinition' --output text)
+            echo "$svc $td" >> previous.txt
+          done < services.txt
+          cat previous.txt
+
+      - name: Register task definitions with the new images
+        run: |
+          set -euo pipefail
+          # Swap only the image tag of this stack's ECR images; everything else stays as Terraform defined it.
+          register() {
+            aws ecs describe-task-definition --task-definition "$1" --query taskDefinition --output json \
+              | jq --arg tag "$TAG" 'del(.taskDefinitionArn,.revision,.status,.requiresAttributes,.compatibilities,.registeredAt,.registeredBy)
+                  | .containerDefinitions |= map(if (.image | test("\\.dkr\\.ecr\\.")) then .image = (.image | sub(":[^:]+$"; ":" + $tag)) else . end)' \
+              > td.json
+            aws ecs register-task-definition --cli-input-json file://td.json --query 'taskDefinition.taskDefinitionArn' --output text
+          }
+          register "$PREFIX-migrate" > migrate_td.txt
+          : > next.txt
+          while read -r svc td; do echo "$svc $(register "$td")" >> next.txt; done < previous.txt
+          cat migrate_td.txt next.txt
+
+      - name: Run database migration (must succeed before any service rolls)
+        run: |
+          set -euo pipefail
+          subnets=$(aws ec2 describe-subnets --filters "Name=tag:Tier,Values=private" "Name=tag:Name,Values=$PREFIX-private-*" --query 'Subnets[].SubnetId' --output text | tr '\t' ',')
+          sg=$(aws ec2 describe-security-groups --filters "Name=group-name,Values=$PREFIX-migrate" --query 'SecurityGroups[0].GroupId' --output text)
+          task=$(aws ecs run-task --cluster "$PREFIX" --launch-type FARGATE --task-definition "$(cat migrate_td.txt)" \
+            --network-configuration "awsvpcConfiguration={subnets=[$subnets],securityGroups=[$sg],assignPublicIp=DISABLED}" \
+            --query 'tasks[0].taskArn' --output text)
+          aws ecs wait tasks-stopped --cluster "$PREFIX" --tasks "$task"
+          code=$(aws ecs describe-tasks --cluster "$PREFIX" --tasks "$task" --query 'tasks[0].containers[0].exitCode' --output text)
+          echo "migration exit code: $code"
+          test "$code" = "0"
+
+      - name: Roll services
+        run: |
+          set -euo pipefail
+          while read -r svc td; do aws ecs update-service --cluster "$PREFIX" --service "$svc" --task-definition "$td" >/dev/null; done < next.txt
+          mapfile -t svcs < <(cut -d' ' -f1 next.txt)
+          # services-stable accepts at most 10 services per call
+          for ((i = 0; i < ${#svcs[@]}; i += 10)); do aws ecs wait services-stable --cluster "$PREFIX" --services "${svcs[@]:i:10}"; done
+
+      - name: Smoke test
+        run: |
+          set -euo pipefail
+          for _ in $(seq 1 20); do
+            if curl -fsS "https://${{ vars.APP_DOMAIN }}/readyz"; then exit 0; fi
+            sleep 10
+          done
+          exit 1
+
+      - name: Roll back on failure
+        if: failure()
+        run: |
+          set -euo pipefail
+          test -s previous.txt || { echo "no rollback targets recorded"; exit 1; }
+          while read -r svc td; do aws ecs update-service --cluster "$PREFIX" --service "$svc" --task-definition "$td" >/dev/null; done < previous.txt
+          mapfile -t svcs < <(cut -d' ' -f1 previous.txt)
+          for ((i = 0; i < ${#svcs[@]}; i += 10)); do aws ecs wait services-stable --cluster "$PREFIX" --services "${svcs[@]:i:10}"; done
+          echo "Rolled back to the previous task definitions (database migrations are forward-only; see DEPLOYMENT.md)."

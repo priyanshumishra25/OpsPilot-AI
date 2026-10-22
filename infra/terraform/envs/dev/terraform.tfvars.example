@@ -1,0 +1,6 @@
+region            = "us-east-1"
+domain_name       = "opspilot.example.com"
+certificate_arn   = "arn:aws:acm:us-east-1:123456789012:certificate/00000000-0000-0000-0000-000000000000"
+image_tag         = "<git sha>"
+github_repository = "your-org/opspilot-ai"
+alarm_email       = "oncall@example.com"
