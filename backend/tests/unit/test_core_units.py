@@ -153,3 +153,27 @@ def test_search_result_blocks_shape() -> None:
     assert blocks[0]["citations"] == {"enabled": True}
     assert blocks[0]["title"] == "Runbook — Recovery"
     assert blocks[0]["source"].startswith("opspilot://documents/")
+
+
+def test_empty_optional_secrets_mean_unset() -> None:
+    from opspilot.config import Settings
+
+    s = Settings(
+        _env_file=None, anthropic_api_key="", github_token="  ", mcp_signing_private_key="", s3_endpoint_url=""
+    )  # type: ignore[call-arg]
+    assert s.anthropic_api_key is None and s.github_token is None and s.mcp_signing_private_key is None
+    assert s.s3_endpoint_url is None
+
+
+def test_password_hash_uses_explicit_owasp_parameters() -> None:
+    import subprocess
+    import sys
+
+    out = subprocess.run(
+        [sys.executable, "-c", "from opspilot.auth.passwords import hash_password; print(hash_password('x'))"],
+        capture_output=True,
+        text=True,
+        check=True,
+        env={"PATH": "/usr/bin", "PYTHONPATH": "src"},
+    ).stdout
+    assert out.startswith("$argon2id$v=19$m=19456,t=2,p=1$")

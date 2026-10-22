@@ -5,7 +5,7 @@ import uuid
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from opspilot.auth.passwords import verify_password
+from opspilot.auth.passwords import ahash_password, averify_password, needs_rehash
 from opspilot.auth.principal import Principal
 from opspilot.db.models import Membership, User, Workspace
 from opspilot.errors import AuthenticationError, PermissionDeniedError
@@ -13,9 +13,12 @@ from opspilot.errors import AuthenticationError, PermissionDeniedError
 
 async def authenticate(session: AsyncSession, email: str, password: str) -> User:
     user = await session.scalar(select(User).where(User.email == email.lower().strip()))
-    ok = verify_password(user.password_hash if user else None, password)
+    ok = await averify_password(user.password_hash if user else None, password)
     if not ok or user is None or not user.is_active:
         raise AuthenticationError("Invalid email or password")
+    if needs_rehash(user.password_hash):
+        # Upgrade hashes created with older cost parameters; the caller's transaction commits it with the login audit.
+        user.password_hash = await ahash_password(password)
     return user
 
 
