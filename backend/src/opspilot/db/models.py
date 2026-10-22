@@ -386,3 +386,22 @@ class AgentTranscriptEntry(Base):
     entry_uuid: Mapped[str | None] = mapped_column(String(64))
     entry: Mapped[dict[str, Any]] = mapped_column(JSONB)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class EvaluationRun(Base):
+    """A recorded evaluation run (platform-level; produced by `python -m opspilot.evaluation.rag_eval --record`)."""
+
+    __tablename__ = "evaluation_runs"
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=_uuid)
+    kind: Mapped[str] = mapped_column(String(32))
+    run_id: Mapped[str] = mapped_column(String(32), unique=True)
+    git_sha: Mapped[str] = mapped_column(String(40))
+    dataset: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    settings: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    retrieval: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    abstention: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    permission_checks: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    generation: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    baseline_comparison: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)
+    environment: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), index=True)

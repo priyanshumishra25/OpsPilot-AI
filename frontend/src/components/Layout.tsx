@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { BookOpenText, Bot, FileWarning, LayoutDashboard, LogOut, MessageSquareText, Moon, PlugZap, ScrollText, ShieldCheck, Sun } from "lucide-react";
+import { BarChart3, BookOpenText, Bot, FileWarning, LayoutDashboard, LogOut, MessageSquareText, Moon, PlugZap, ScrollText, Settings, ShieldCheck, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 import { NavLink, Outlet } from "react-router";
 import { useAuth } from "../lib/auth";
@@ -12,6 +12,8 @@ const NAV = [
   { to: "/approvals", label: "Approvals", icon: ShieldCheck },
   { to: "/knowledge", label: "Knowledge Base", icon: BookOpenText },
   { to: "/integrations", label: "Integrations", icon: PlugZap },
+  { to: "/evaluations", label: "Evaluations", icon: BarChart3 },
+  { to: "/settings", label: "Settings", icon: Settings },
   { to: "/activity", label: "Activity", icon: ScrollText, permission: "audit:read" },
 ] as const;
 

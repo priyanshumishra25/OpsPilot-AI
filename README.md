@@ -7,6 +7,10 @@ remediation on top of this foundation (see [Status](#status)).
 
 ![Ask page showing hybrid retrieval evidence](docs/screenshots/ask-retrieval-evidence.png)
 
+| Evaluations (recorded runs) | Approvals (two-person, single-use) |
+|---|---|
+| ![Evaluations](docs/screenshots/evaluations.png) | ![Approvals](docs/screenshots/approvals.png) |
+
 ## Status
 
 This repository is being built in vertical slices. Only what is listed as **done** has been
@@ -19,7 +23,7 @@ implemented and verified; nothing else should be assumed to exist.
 | 2 | MCP servers (knowledge, GitHub, observability, operations), demo environment with real telemetry, approval state machine | **done**; GitHub code search unverified (needs a token) |
 | 3 | Claude Agent SDK investigation agent (sessions, streaming, budgets, structured reports) | **built; not verified against the live model** (no API key) |
 | 4 | Approval UI and agent-driven remediation handoff | **done** (UI verified end to end with a human approver) |
-| 5 | Remaining product UI (evaluations, settings) | partially done: Investigate, Incidents, Approvals, Integrations pages exist |
+| 5 | Full product UI | **done**: Overview, Investigate, Ask, Incidents, Approvals, Knowledge Base, Integrations, Evaluations, Settings, Activity |
 | 5–8 | Full product UI, hardening, AWS/Terraform deployment, final evaluation | not started |
 
 **Phase 2 verification:** the four MCP servers were exercised by the official MCP Inspector CLI (an independent

@@ -169,5 +169,5 @@ events (assistant text, tool calls/results, approvals, report, usage) --> agent_
 
 ## Planned (not implemented)
 
-Evaluations and settings pages, the OpenTelemetry collector,
+The OpenTelemetry collector,
 Terraform for AWS (ECS Fargate, RDS, S3, SQS, Secrets Manager), and a deployment workflow with GitHub OIDC.

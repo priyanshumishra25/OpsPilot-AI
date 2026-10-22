@@ -426,6 +426,33 @@ def compare(result: dict[str, Any], baseline: dict[str, Any]) -> list[str]:
     return failures
 
 
+async def record(result: dict[str, Any], failures: list[str] | None) -> None:
+    from opspilot.db.base import Database
+    from opspilot.db.models import EvaluationRun
+
+    db = Database(get_settings().database_url, pool_size=1)
+    try:
+        async with db.session() as s:
+            s.add(
+                EvaluationRun(
+                    kind="retrieval",
+                    run_id=result["run_id"],
+                    git_sha=result["git_sha"],
+                    dataset=result["dataset"],
+                    settings=result["settings"],
+                    retrieval=result["retrieval"],
+                    abstention=result["abstention"],
+                    permission_checks=result["permission_checks"],
+                    generation=result["generation"],
+                    environment=result["environment"],
+                    baseline_comparison={"compared": failures is not None, "regressions": failures or []},
+                )
+            )
+            await s.commit()
+    finally:
+        await db.dispose()
+
+
 def summary_markdown(r: dict[str, Any]) -> str:
     lines = [
         f"# RAG evaluation {r['run_id']} (git {r['git_sha']})",
@@ -471,6 +498,9 @@ def main() -> None:
     p.add_argument("--compare-baseline", action="store_true")
     p.add_argument("--update-baseline", action="store_true")
     p.add_argument("--generation", action="store_true", help="Also run generation metrics (needs API key; incurs cost)")
+    p.add_argument(
+        "--record", action="store_true", help="Store the run in the database (shown on the Evaluations page)"
+    )
     args = p.parse_args()
     result = asyncio.run(run(args))
     RUNS.mkdir(parents=True, exist_ok=True)
@@ -487,10 +517,15 @@ def main() -> None:
         }
         BASELINE.write_text(json.dumps(keep, indent=2) + "\n")
         print(f"Baseline updated: {BASELINE}")
-    if args.compare_baseline:
-        if not BASELINE.exists():
-            sys.exit("No baseline committed; run with --update-baseline first")
+    failures: list[str] | None = None
+    if BASELINE.exists():
         failures = compare(result, json.loads(BASELINE.read_text()))
+    if args.record:
+        asyncio.run(record(result, failures))
+        print("Recorded run in the database.")
+    if args.compare_baseline:
+        if not BASELINE.exists() or failures is None:
+            sys.exit("No baseline committed; run with --update-baseline first")
         if failures:
             print("REGRESSION:\n  " + "\n  ".join(failures))
             sys.exit(1)

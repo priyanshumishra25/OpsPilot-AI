@@ -19,7 +19,7 @@ function mcp(tool: string, args: Record<string, string>): Record<string, unknown
   try {
     out = execFileSync("npx", argv, { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
   } catch (e) {
-    out = String((e as { stdout?: string }).stdout ?? "");
+    out = (e as { stdout?: string }).stdout ?? "";
   }
   const parsed = JSON.parse(out) as { structuredContent?: Record<string, unknown>; isError?: boolean };
   return parsed.structuredContent ?? { isError: true };

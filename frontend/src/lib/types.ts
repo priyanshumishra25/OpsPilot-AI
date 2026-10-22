@@ -261,3 +261,25 @@ export interface DemoState {
   scenarios: { name: string; description: string }[];
   services: { service: string; current_version: string; commit_sha: string; deployed_at: string; deployed_by: string; active_faults: Record<string, unknown>; scenario: string | null }[];
 }
+
+export interface RetrievalMetrics {
+  "recall@5": number; "precision@5": number; mrr: number; "ndcg@5": number;
+  latency_ms: { p50: number; p95: number };
+  n_scored: number;
+}
+
+export interface EvaluationRun {
+  id: string;
+  kind: string;
+  run_id: string;
+  git_sha: string;
+  dataset: { questions?: number; answerable?: number; dev?: number; test?: number; path?: string };
+  settings: Record<string, unknown>;
+  retrieval: Record<string, RetrievalMetrics>;
+  abstention: Record<string, { signal: string; threshold: number; dev_balanced_accuracy: number; test_answerable_kept: number; test_unanswerable_abstained: number; n_test: { answerable: number; unanswerable: number } }>;
+  permission_checks: { passed: boolean };
+  generation: { status: string; reason?: string } & Record<string, unknown>;
+  baseline_comparison: { compared?: boolean; regressions?: string[] };
+  environment: { note?: string } & Record<string, unknown>;
+  created_at: string;
+}

@@ -7,6 +7,8 @@ import { IncidentsPage } from "./pages/IncidentsPage";
 import { IntegrationsPage } from "./pages/IntegrationsPage";
 import { InvestigatePage } from "./pages/InvestigatePage";
 import { AskPage } from "./pages/AskPage";
+import { EvaluationsPage } from "./pages/EvaluationsPage";
+import { SettingsPage } from "./pages/SettingsPage";
 import { KnowledgePage } from "./pages/KnowledgePage";
 import { LoginPage } from "./pages/LoginPage";
 import { OverviewPage } from "./pages/OverviewPage";
@@ -29,6 +31,8 @@ export function App() {
         <Route path="incidents/:id" element={<IncidentsPage />} />
         <Route path="approvals" element={<ApprovalsPage />} />
         <Route path="integrations" element={<IntegrationsPage />} />
+        <Route path="evaluations" element={<EvaluationsPage />} />
+        <Route path="settings" element={<SettingsPage />} />
         <Route path="knowledge" element={<KnowledgePage />} />
         <Route path="activity" element={<ActivityPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
