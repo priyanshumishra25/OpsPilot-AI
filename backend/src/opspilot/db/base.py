@@ -23,12 +23,12 @@ class Base(DeclarativeBase):
 
 
 class Database:
-    def __init__(self, url: str, *, pool_size: int = 10, statement_timeout_ms: int = 15_000) -> None:
+    def __init__(self, url: str, *, pool_size: int = 10, statement_timeout_ms: int = 15_000, ssl: bool = False) -> None:
+        connect_args: dict[str, object] = {"server_settings": {"statement_timeout": str(statement_timeout_ms)}}
+        if ssl:
+            connect_args["ssl"] = "require"  # RDS enforces TLS via rds.force_ssl
         self.engine: AsyncEngine = create_async_engine(
-            url,
-            pool_size=pool_size,
-            pool_pre_ping=True,
-            connect_args={"server_settings": {"statement_timeout": str(statement_timeout_ms)}},
+            url, pool_size=pool_size, pool_pre_ping=True, connect_args=connect_args
         )
         self.sessionmaker = async_sessionmaker(self.engine, expire_on_commit=False)
 

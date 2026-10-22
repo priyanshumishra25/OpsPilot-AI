@@ -67,7 +67,7 @@ services:
       retries: 30
 
   migrate:
-    build: ./backend
+    build: {context: ./backend, additional_contexts: {demo: ./demo}}
     command: ["sh", "-c", "alembic upgrade head && python -m opspilot.cli bootstrap"]
     environment: *backend-env
     volumes: [models:/models]
@@ -78,7 +78,7 @@ services:
 
   # One-shot: creates the labelled demo workspace/users and queues the demo corpus for ingestion.
   seed:
-    build: ./backend
+    build: {context: ./backend, additional_contexts: {demo: ./demo}}
     command: ["python", "-m", "opspilot.cli", "seed-demo"]
     environment:
       <<: *backend-env
@@ -89,7 +89,7 @@ services:
     profiles: [demo]
 
   api:
-    build: ./backend
+    build: {context: ./backend, additional_contexts: {demo: ./demo}}
     command: ["uvicorn", "opspilot.main:app", "--host", "0.0.0.0", "--port", "8000", "--timeout-graceful-shutdown", "20"]
     environment:
       <<: *backend-env
@@ -105,7 +105,7 @@ services:
       retries: 20
 
   worker:
-    build: ./backend
+    build: {context: ./backend, additional_contexts: {demo: ./demo}}
     command: ["python", "-m", "opspilot.cli", "worker"]
     environment: *backend-env
     volumes: [models:/models]
@@ -116,7 +116,7 @@ services:
   # Runs agent turns (Claude Agent SDK + bundled CLI). Holds the model API key and the MCP signing key;
   # has no built-in tools enabled and reaches only the MCP servers.
   agent-worker:
-    build: ./backend
+    build: {context: ./backend, additional_contexts: {demo: ./demo}}
     command: ["python", "-m", "opspilot.cli", "agent-worker"]
     environment:
       <<: *backend-env
@@ -138,7 +138,7 @@ services:
   # MCP servers (Streamable HTTP). Each verifies EdDSA tool tokens minted by the API (public key only).
   # ---------------------------------------------------------------------------------------------
   mcp-knowledge:
-    build: ./backend
+    build: {context: ./backend, additional_contexts: {demo: ./demo}}
     ports: ["127.0.0.1:8101:8101"]
     command: ["python", "-m", "opspilot.mcpservers.knowledge"]
     environment: *backend-env
@@ -146,7 +146,7 @@ services:
     depends_on: {migrate: {condition: service_completed_successfully}}
 
   mcp-github:
-    build: ./backend
+    build: {context: ./backend, additional_contexts: {demo: ./demo}}
     ports: ["127.0.0.1:8102:8102"]
     command: ["python", "-m", "opspilot.mcpservers.github"]
     environment:
@@ -155,11 +155,10 @@ services:
       OPSPILOT_GITHUB_TOKEN: ${GITHUB_TOKEN:-}
       OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
       OPSPILOT_GITHUB_REPOSITORIES: '{"opspilot-demo/orders-api": {"provider": "local", "path": "/repos/orders-api", "workspaces": "*"}, "opspilot-demo/checkout-api": {"provider": "local", "path": "/repos/checkout-api", "workspaces": "*"}}'
-    volumes: [demorepos:/repos:ro]
     depends_on: {control-plane: {condition: service_healthy}}
 
   mcp-observability:
-    build: ./backend
+    build: {context: ./backend, additional_contexts: {demo: ./demo}}
     ports: ["127.0.0.1:8103:8103"]
     command: ["python", "-m", "opspilot.mcpservers.observability"]
     environment:
@@ -170,7 +169,7 @@ services:
     depends_on: [prometheus, loki, control-plane]
 
   mcp-operations:
-    build: ./backend
+    build: {context: ./backend, additional_contexts: {demo: ./demo}}
     ports: ["127.0.0.1:8104:8104"]
     command: ["python", "-m", "opspilot.mcpservers.operations"]
     environment:
@@ -193,7 +192,7 @@ services:
       CONTROL_PLANE_DEPLOY_TOKEN: ${CONTROL_PLANE_DEPLOY_TOKEN:?set in .env}
       CONTROL_PLANE_ADMIN_TOKEN: ${CONTROL_PLANE_ADMIN_TOKEN:?set in .env}
       DEMO_REPOS_DIR: /repos
-    volumes: [controlplane:/data, demorepos:/repos]
+    volumes: [controlplane:/data]
     ports: ["127.0.0.1:8090:8090"]
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8090/healthz')"]
@@ -246,6 +245,5 @@ volumes:
   s3data:
   models:
   controlplane:
-  demorepos:
   promdata:
   lokidata:

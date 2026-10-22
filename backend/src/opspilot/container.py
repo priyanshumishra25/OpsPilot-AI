@@ -69,7 +69,10 @@ def build_container(settings: Settings) -> Container:
             "changing embedding models requires a migration and full re-index"
         )
     db = Database(
-        settings.database_url, pool_size=settings.db_pool_size, statement_timeout_ms=settings.db_statement_timeout_ms
+        settings.database_url,
+        ssl=settings.database_ssl == "require",
+        pool_size=settings.db_pool_size,
+        statement_timeout_ms=settings.db_statement_timeout_ms,
     )
     redis = Redis.from_url(settings.redis_url)
     store = S3ObjectStore(settings)

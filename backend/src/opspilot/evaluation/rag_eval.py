@@ -430,7 +430,7 @@ async def record(result: dict[str, Any], failures: list[str] | None) -> None:
     from opspilot.db.base import Database
     from opspilot.db.models import EvaluationRun
 
-    db = Database(get_settings().database_url, pool_size=1)
+    db = Database(get_settings().database_url, ssl=get_settings().database_ssl == "require", pool_size=1)
     try:
         async with db.session() as s:
             s.add(

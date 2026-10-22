@@ -17,6 +17,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends git && rm -rf /
     && mkdir -p /models && chown app:app /models
 WORKDIR /app
 COPY --from=build --chown=app:app /app /app
+# Deterministic demo git history (same SHAs as the demo control plane), read by the GitHub MCP server's local provider.
+COPY --from=demo repos/build_repos.py /opt/demo/build_repos.py
+RUN python /opt/demo/build_repos.py /repos >/dev/null && chown -R app:app /repos
 ENV PATH="/app/.venv/bin:$PATH" PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1 \
     OPSPILOT_EMBEDDING_CACHE_DIR=/models HF_HOME=/models/hf HF_HUB_DISABLE_TELEMETRY=1
 USER app

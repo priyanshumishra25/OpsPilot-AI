@@ -1,0 +1,7 @@
+# Demo-environment Prometheus for AWS (ECS Service Connect DNS names).
+global:
+  scrape_interval: 5s
+scrape_configs:
+  - job_name: demo-services
+    static_configs:
+      - targets: ["orders-api:8000", "checkout-api:8001"]

@@ -159,9 +159,10 @@ def test_empty_optional_secrets_mean_unset() -> None:
     from opspilot.config import Settings
 
     s = Settings(
-        _env_file=None, anthropic_api_key="", github_token="  ", mcp_signing_private_key="", s3_endpoint_url=""
+        _env_file=None, anthropic_api_key="", github_token="unset", mcp_signing_private_key="", s3_endpoint_url=""
     )  # type: ignore[call-arg]
     assert s.anthropic_api_key is None and s.github_token is None and s.mcp_signing_private_key is None
+    assert Settings(_env_file=None, anthropic_api_key="UNSET").anthropic_api_key is None  # type: ignore[call-arg]
     assert s.s3_endpoint_url is None
 
 
@@ -177,3 +178,20 @@ def test_password_hash_uses_explicit_owasp_parameters() -> None:
         env={"PATH": "/usr/bin", "PYTHONPATH": "src"},
     ).stdout
     assert out.startswith("$argon2id$v=19$m=19456,t=2,p=1$")
+
+
+def test_database_and_redis_urls_from_components() -> None:
+    from opspilot.config import Settings
+
+    s = Settings(  # type: ignore[call-arg]
+        _env_file=None,
+        database_host="db.internal",
+        database_user="app",
+        database_password="p@ss/w:rd%",
+        database_name="opspilot",
+        redis_host="cache.internal",
+        redis_password="tok/en",
+        redis_tls=True,
+    )
+    assert s.database_url == "postgresql+asyncpg://app:p%40ss%2Fw%3Ard%25@db.internal:5432/opspilot"
+    assert s.redis_url == "rediss://:tok%2Fen@cache.internal:6379/0"

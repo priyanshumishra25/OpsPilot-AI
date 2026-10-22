@@ -26,6 +26,19 @@ class Settings(BaseSettings):
 
     redis_url: str = "redis://localhost:6379/0"
 
+    # Component form (used on AWS, where ECS injects individual Secrets Manager fields and cannot compose a URL).
+    # When `database_host` is set it overrides `database_url`; likewise `redis_host` overrides `redis_url`.
+    database_host: str | None = None
+    database_port: int = 5432
+    database_name: str = "opspilot"
+    database_user: str | None = None
+    database_password: SecretStr | None = None
+    database_ssl: Literal["disable", "require"] = "disable"
+    redis_host: str | None = None
+    redis_port: int = 6379
+    redis_password: SecretStr | None = None
+    redis_tls: bool = False
+
     # Queue backend: Redis Streams locally, SQS in AWS.
     queue_backend: Literal["redis", "sqs"] = "redis"
     sqs_queue_url: str | None = None
@@ -153,8 +166,9 @@ class Settings(BaseSettings):
     )
     @classmethod
     def _empty_is_unset(cls, v: object) -> object:
-        # Compose passes unset variables as "", which must mean "not configured", not an empty credential.
-        return None if isinstance(v, str) and not v.strip() else v
+        # Compose passes unset variables as "", and ECS cannot start a task whose secret has no value, so optional
+        # secrets are stored as the sentinel "unset" (infra/scripts/put-secrets.sh). Both mean "not configured".
+        return None if isinstance(v, str) and (not v.strip() or v.strip().lower() == "unset") else v
 
     @field_validator("jwt_secret")
     @classmethod
@@ -164,6 +178,19 @@ class Settings(BaseSettings):
         return v
 
     def model_post_init(self, __context: object) -> None:
+        if self.database_host:
+            from urllib.parse import quote
+
+            user = quote(self.database_user or "", safe="")
+            pwd = quote(self.database_password.get_secret_value(), safe="") if self.database_password else ""
+            self.database_url = (
+                f"postgresql+asyncpg://{user}:{pwd}@{self.database_host}:{self.database_port}/{self.database_name}"
+            )
+        if self.redis_host:
+            from urllib.parse import quote
+
+            auth = f":{quote(self.redis_password.get_secret_value(), safe='')}@" if self.redis_password else ""
+            self.redis_url = f"{'rediss' if self.redis_tls else 'redis'}://{auth}{self.redis_host}:{self.redis_port}/0"
         if self.environment not in ("local", "test") and self.jwt_secret.get_secret_value().startswith(
             "local-dev-only"
         ):

@@ -86,7 +86,12 @@ class SourceList(BaseModel):
 
 
 def build(settings: Settings) -> MCPServer:
-    db = Database(settings.database_url, pool_size=5, statement_timeout_ms=settings.db_statement_timeout_ms)
+    db = Database(
+        settings.database_url,
+        ssl=settings.database_ssl == "require",
+        pool_size=5,
+        statement_timeout_ms=settings.db_statement_timeout_ms,
+    )
     embeddings = FastEmbedEmbeddings(settings.embedding_model, cache_dir=settings.embedding_cache_dir)
     reranker = (
         CrossEncoderReranker(settings.reranker_model, cache_dir=settings.embedding_cache_dir)

@@ -123,7 +123,7 @@ def rollback_candidates(status: dict[str, Any], releases: list[dict[str, Any]]) 
 
 
 def build(settings: Settings, control_plane: ControlPlaneClient | None = None, db: Database | None = None) -> MCPServer:
-    database = db or Database(settings.database_url, pool_size=5)
+    database = db or Database(settings.database_url, ssl=settings.database_ssl == "require", pool_size=5)
     deploy_token = settings.control_plane_deploy_token.get_secret_value() if settings.control_plane_deploy_token else ""
     cp = control_plane or ControlPlaneClient(settings.control_plane_url, deploy_token)
     approvals = ApprovalService(

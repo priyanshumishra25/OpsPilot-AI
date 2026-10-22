@@ -12,7 +12,8 @@ from opspilot.db.base import Base
 config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
-config.set_main_option("sqlalchemy.url", get_settings().database_url)
+_settings = get_settings()
+config.set_main_option("sqlalchemy.url", _settings.database_url.replace("%", "%%"))
 target_metadata = Base.metadata
 
 
@@ -30,7 +31,10 @@ def do_run_migrations(connection) -> None:  # type: ignore[no-untyped-def]
 
 async def run_async_migrations() -> None:
     connectable = async_engine_from_config(
-        config.get_section(config.config_ini_section, {}), prefix="sqlalchemy.", poolclass=pool.NullPool
+        config.get_section(config.config_ini_section, {}),
+        prefix="sqlalchemy.",
+        poolclass=pool.NullPool,
+        connect_args={"ssl": "require"} if _settings.database_ssl == "require" else {},
     )
     async with connectable.connect() as connection:
         await connection.run_sync(do_run_migrations)
