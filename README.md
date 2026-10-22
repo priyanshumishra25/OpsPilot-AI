@@ -1,9 +1,9 @@
 # OpsPilot AI
 
-An engineering-operations copilot: upload runbooks, architecture notes and postmortems, then ask
-questions and get answers grounded in that documentation, with citations that resolve to the exact
-passage the answer relied on. The roadmap adds MCP-based incident investigation and human-approved
-remediation on top of this foundation (see [Status](#status)).
+An engineering-operations copilot. It answers questions from your runbooks and postmortems with citations that
+resolve to the exact passage, investigates incidents with an agent that reads metrics, logs, deployments and code
+through MCP servers, and can roll back a bad deployment, but only after a different human approves that exact
+action.
 
 ![Ask page showing hybrid retrieval evidence](docs/screenshots/ask-retrieval-evidence.png)
 
@@ -13,65 +13,88 @@ remediation on top of this foundation (see [Status](#status)).
 
 ## Status
 
-This repository is being built in vertical slices. Only what is listed as **done** has been
-implemented and verified; nothing else should be assumed to exist.
-
 | Phase | Scope | State |
 |---|---|---|
-| 0 | Monorepo, Docker Compose stack, Postgres/pgvector schema + migrations, API + frontend shell, CI | **done** |
-| 1 | Production RAG: ingestion worker, chunking, embeddings, hybrid retrieval, reranking, permissions, grounded generation with verifiable citations, golden-set evaluation | **done** (generation verified only against a scripted test double, see below) |
-| 2 | MCP servers (knowledge, GitHub, observability, operations), demo environment with real telemetry, approval state machine | **done**; GitHub code search unverified (needs a token) |
-| 3 | Claude Agent SDK investigation agent (sessions, streaming, budgets, structured reports) | **built; not verified against the live model** (no API key) |
-| 4 | Approval UI and agent-driven remediation handoff | **done** (UI verified end to end with a human approver) |
-| 5 | Full product UI | **done**: Overview, Investigate, Ask, Incidents, Approvals, Knowledge Base, Integrations, Evaluations, Settings, Activity |
-| 6 | Observability and hardening: cross-service tracing (verified in Jaeger), fault injection, Argon2 off the event loop, per-test hard timeouts | **done** |
-| 7 | AWS infrastructure (Terraform), OIDC deploy workflow with migration and rollback | **written and statically validated** (fmt, validate, Checkov 0 failed, actionlint); **not deployed** (no AWS account or authorisation) |
-| 8 | Final evaluation and polish | not started |
+| 0 | Monorepo, Compose stack, schema and migrations, API and frontend shell, CI | done |
+| 1 | RAG: ingestion worker, chunking, embeddings, hybrid retrieval, reranking, permissions, grounded generation, golden-set evaluation | done (generation tested with a scripted model only) |
+| 2 | MCP servers (knowledge, GitHub, observability, operations), demo environment with real telemetry, approval state machine | done (GitHub code search needs a token, unverified) |
+| 3 | Investigation agent on the Claude Agent SDK | built; **not run against the live model** |
+| 4 | Approval UI and agent remediation handoff | done |
+| 5 | Product UI (10 pages) | done |
+| 6 | Cross-service tracing, fault injection, hardening | done |
+| 7 | AWS Terraform and OIDC deploy workflow | written and statically validated; **never applied** |
+| 8 | Fresh-clone verification, evaluation, polish | done |
 
-**Phase 2 verification:** the four MCP servers were exercised by the official MCP Inspector CLI (an independent
-client) against the live stack through a complete incident: detection, logs, commit diff, runbook retrieval,
-rollback request, refusal before approval, human approval, single execution, refusal on replay, and recovery in
-Prometheus. See [docs/INCIDENT_DEMO.md](docs/INCIDENT_DEMO.md) and [docs/MCP_TOOLS.md](docs/MCP_TOOLS.md).
+## What has been verified, and what has not
 
-**Phase 3 verification (without a model):** the agent runs on the real Claude Agent SDK and its bundled CLI, against
-the real MCP servers, approvals and Postgres. Tests replace only the model with a scripted Messages API test double
-(`backend/tests/fake_anthropic.py`). This verifies orchestration: tool permissions, budgets, approval handoff,
-resume from Postgres after local state is deleted, cancellation, and refusal of an injection-obeying model. It does
-not verify investigation quality, which needs a live model and has not been measured.
+**Verified against real services:**
+- **Ingestion, retrieval and permissions:** tested against real Postgres, Redis and S3.
+- **MCP servers:** exercised over HTTP, including by the independent MCP Inspector CLI through a full live
+  incident: detection, logs, commit diff, runbook lookup, rollback request, refusal before approval, human
+  approval, a single execution, refusal on replay, and recovery in Prometheus.
+- **Approval UI:** tested end to end with Playwright.
+- **Tracing:** cross-service traces confirmed in Jaeger.
+- **Fresh clone:** `cp .env.example .env && docker compose --profile demo up --build`, followed by all
+  E2E tests with default security settings.
 
-**Unverified external integration:** no Anthropic API key was available while building, so answer
-generation has been exercised only through a scripted test double of the SDK's streaming interface
-(request shape, citation resolution, usage/cost accounting, abstention, SSE). Retrieval, ingestion,
-permissions and the UI are verified end-to-end against real services. Set `ANTHROPIC_API_KEY` to
-enable generation; without it the UI shows retrieved evidence and says generation is unavailable.
+**Verified with only the model replaced:** the agent runs on the real Claude Agent SDK and its bundled CLI, against
+real MCP servers, approvals and Postgres. A scripted Messages API (`backend/tests/fake_anthropic.py`) stands in
+for Claude. These tests prove the orchestration:
 
-## What works today
+- tool permissions per role;
+- turn, cost, time and tool-call budgets;
+- the approval handoff;
+- resume from Postgres after all local state is deleted;
+- cancellation;
+- that a model which *obeys* an injected instruction still cannot change anything.
 
-- **Ingestion** of Markdown, plain text and PDF: type sniffing (extension and magic bytes must agree),
-  size and page limits, SHA-256 content hashing, per-document versioning, duplicate detection,
-  re-index, delete with index and artifact cleanup. Runs in a separate worker process fed by Redis
-  Streams (SQS adapter for AWS), with idempotent job claims, retries with exponential backoff and full
-  jitter, a dead-letter stream, stale-lease recovery and durable job status shown in the UI.
-- **Incremental indexing:** a re-uploaded document only re-embeds passages whose text or heading
-  context changed (verified in tests: editing one section re-embeds exactly one passage).
-- **Structure-aware chunking** that keeps each passage's heading path and *exact* character offsets
-  into the normalised source (asserted for every chunk of the corpus in tests).
-- **Hybrid retrieval:** pgvector HNSW cosine search + PostgreSQL full-text search, fused with
-  Reciprocal Rank Fusion, reranked by a local cross-encoder, then budgeted (token budget, duplicate
-  suppression, per-document cap). Tenant and access-scope predicates run *inside* each candidate SQL
-  query, before ranking and `LIMIT`.
-- **Evidence-sufficiency gate:** if the top reranked passage scores below a threshold calibrated on
-  the golden set's dev split, the system abstains without calling the model.
-- **Grounded generation** (Claude via the official `anthropic` SDK): passages are sent as
-  `search_result` blocks with citations enabled. Each returned citation's index is resolved to a chunk
-  we retrieved; citations that don't resolve, or whose quoted text isn't in that chunk, are discarded
-  and counted. Streamed to the browser over SSE, with cancellation, persisted history, provider-reported
-  token usage and cost from configured prices.
-- **Auth:** Argon2id passwords, short-lived signed access tokens, server-side role and scope
-  resolution on every request, rate-limited login, audit log.
-- **UI:** Overview, Ask (streaming answers, inline citation markers, passage preview with the cited
-  text highlighted, retrieval diagnostics), Knowledge Base (upload, live ingestion status, versions,
-  passages, re-index, delete), Activity (audit log). Dark theme by default, with a light theme option.
+**Not verified:** answer and investigation *quality* with the live Claude API (no key was available), GitHub code
+search (no token), and the AWS deployment (no account). Nothing here claims otherwise.
+
+## What it does
+
+- **Knowledge and RAG:**
+  - Markdown, text and PDF ingestion in a separate worker, with versioning, duplicate detection and incremental
+    re-embedding.
+  - Exact-offset, structure-aware chunks.
+  - Hybrid retrieval (pgvector HNSW and Postgres full-text, fused with RRF), then cross-encoder reranking.
+  - Tenant and scope filters applied *inside* the candidate SQL.
+  - A calibrated evidence-sufficiency gate.
+  - Claude answers whose citations are indices into the retrieved passages, verified before display.
+- **MCP servers** (official SDK, Streamable HTTP):
+  - Knowledge search and reading.
+  - GitHub (REST API, or local git for the deterministic demo repositories).
+  - Observability (Prometheus and Loki through fixed query templates).
+  - Operations (deployment state, rollback eligibility, approval-gated rollback).
+  - Every call carries a short-lived Ed25519 token minted for the signed-in user. See
+    [docs/MCP_TOOLS.md](docs/MCP_TOOLS.md).
+- **Investigation agent** (Claude Agent SDK):
+  - No built-in tools; MCP tools filtered by role.
+  - Budgets, cancellation, and transcripts in Postgres so a session can resume on any worker.
+  - Streamed timeline of tool calls and results.
+  - A structured incident report whose evidence is checked against tool calls that actually succeeded.
+  - Qualitative confidence only, never a made-up number.
+- **Safe remediation:**
+  - Approvals bind the requester, exact argument hash, target state snapshot, expiry and a one-time execution ID.
+  - The approver must be someone else, and there is no approve tool.
+  - Execution re-checks the live target and deploys with compare-and-swap.
+  - It acts only on the isolated demo environment.
+- **Demo environment:**
+  - Orders and Checkout services whose behaviour follows the deployed version, so a bad release really exhausts
+    the connection pool.
+  - Steady traffic, Prometheus and Loki, and a git history with reproducible SHAs.
+  - Scenario triggers, resettable from the UI.
+- **Observability:**
+  - JSON logs with redaction.
+  - Prometheus metrics.
+  - OpenTelemetry traces from API to MCP tool to retrieval.
+  - Per-query and per-turn token usage and cost estimates from provider-reported usage.
+  - Audit log of security-relevant actions.
+- **UI:** Overview, Investigate, Ask, Incidents, Approvals, Knowledge Base, Integrations, Evaluations, Settings,
+  Activity. Dark by default, with a light theme.
+- **Deployment:**
+  - Terraform for AWS: ECS Fargate, RDS PostgreSQL 17, ElastiCache, S3, SQS, KMS, WAF, alarms.
+  - A GitHub OIDC deploy workflow with a migration gate and automatic rollback. See [DEPLOYMENT.md](DEPLOYMENT.md).
 
 ## Measured retrieval quality
 
@@ -136,7 +159,7 @@ docker compose --profile demo up --build
 - Without `--profile demo`, create users with
   `docker compose run --rm api python -m opspilot.cli create-user --email you@corp.example --name You --workspace acme --role admin --scopes general`.
 
-### Example
+### Example: grounded answers
 
 Sign in as `engineer@opspilot.demo` and ask *"What is the documented procedure for recovering the
 checkout service after a database connection failure?"*. The retrieval panel shows the Checkout
@@ -145,6 +168,17 @@ With an API key configured, the answer streams with citation markers that open t
 Ask *"What is the name of the break-glass database administrator account?"* as the engineer and the
 system abstains: the answer exists only in an `sre-restricted` document. Ask the same question as
 `sre@opspilot.demo` and it is answered.
+
+### Example: an incident
+
+As `admin@opspilot.demo`, open **Integrations → Demo environment** and trigger `orders-bad-deploy`. Within about
+30 s, orders-api returns HTTP 500 `PoolTimeoutError` for about a quarter of requests. Then:
+
+- **With a model key:** ask **Investigate** *"Investigate why the orders API started returning HTTP 500 errors
+  after the latest deployment"*. Then ask it to roll back, approve as `sre@opspilot.demo` in **Approvals**, and
+  tell the agent the rollback was approved.
+- **Without a key:** drive the same MCP tools with the MCP Inspector CLI; see
+  [docs/INCIDENT_DEMO.md](docs/INCIDENT_DEMO.md).
 
 ## Development
 
@@ -159,22 +193,33 @@ npx playwright test                           # against a running stack
 cd backend && uv run python -m opspilot.evaluation.rag_eval --compare-baseline
 ```
 
-Latest local verification (Phase 2): 91 backend tests (unit + integration against real pgvector and Redis),
-9 frontend unit tests and 5 Playwright E2E tests against the full Compose stack (desktop and mobile
-viewports) all pass; ruff, mypy `--strict`, eslint (type-aware) and `tsc` are clean. The GitHub
-Actions workflow in `.github/workflows/ci.yml` has not yet run on GitHub.
+Latest local verification (Phase 8):
+
+- **Backend:** 109 tests pass against real Postgres (pgvector) and Redis, with MCP servers over real HTTP and the
+  agent on the real Claude Agent SDK and CLI with a scripted model. Ruff and mypy `--strict` are clean.
+- **Frontend:** 17 unit tests pass; eslint (type-aware) and `tsc` are clean.
+- **End to end:** 9 Playwright tests pass against a stack started from a **fresh clone** with exactly
+  `cp .env.example .env && docker compose --profile demo up --build`, with default security settings.
+- **Retrieval:** the regression gate reports no regression against the committed baseline.
+- **Infrastructure:** Terraform passes `fmt` and `validate`, and Checkov reports 0 failures.
+- **CI:** the GitHub Actions workflows pass actionlint, but have not yet run on GitHub.
 
 ## Security model (summary)
 
-Tenant isolation is enforced in SQL on every query, not in prompts. Users only see documents in
-access scopes their membership grants, and citations resolve through the same predicate, so a citation
-can't reveal an inaccessible passage. Retrieved text is treated as untrusted data: the system prompt
-says so, but the controls that matter (what is retrieved, what can be cited) don't depend on the model
-obeying it. Details: [SECURITY.md](SECURITY.md), [THREAT_MODEL.md](THREAT_MODEL.md).
+- **Isolation:** tenant and scope checks are SQL predicates on every query and citation lookup.
+- **MCP identity:** comes only from signed, audience-bound, 120-second tool tokens. Servers re-check membership,
+  and the model can't supply identity.
+- **Privileged actions:** go through a database state machine, not a prompt. Every refusal is audited.
+- **Untrusted content:** retrieved documents, logs and repository content are treated as data. The demo traffic
+  deliberately plants an injection attempt in logs, and tests confirm it can't cause a mutation.
+- **AWS:** per-service IAM roles, customer-managed KMS encryption, WAF, and secrets kept out of Terraform state.
+
+Details: [SECURITY.md](SECURITY.md), [THREAT_MODEL.md](THREAT_MODEL.md).
 
 ## Known limitations
 
-- Answer generation has not been verified against the live Claude API (see Status).
+- Answer generation and agent investigations have not been run against the live Claude API (see above).
+- The agent's own tool calls (made by its CLI subprocess) are not yet linked into the turn's trace.
 - Access tokens are bearer tokens kept in `sessionStorage`; there are no refresh tokens or server-side
   revocation yet.
 - Cross-encoder reranking is CPU-bound: about 200 ms in-process for 20 candidates, and noticeably
@@ -191,12 +236,12 @@ obeying it. Details: [SECURITY.md](SECURITY.md), [THREAT_MODEL.md](THREAT_MODEL.
 ## Repository layout
 
 ```
-backend/    FastAPI app, ingestion worker, RAG pipeline, CLI, Alembic migrations, tests
+backend/    FastAPI API, ingestion worker, RAG pipeline, MCP servers, agent worker, CLI, migrations, tests
 frontend/   React + TypeScript SPA, Vitest unit tests, Playwright E2E
 demo/       demo environment: control plane, orders/checkout services, traffic, git history, docs corpus
-evals/      golden dataset, committed baseline, run artifacts (git-ignored)
-infra/      local infrastructure configuration
-docs/       screenshots and API notes
+evals/      golden dataset and committed retrieval baseline
+infra/      local config (Prometheus, S3 gateway) and AWS Terraform (modules, stack, dev/prod envs)
+docs/       MCP tool reference, incident demo guide, API notes, screenshots
 ```
 
 ## License

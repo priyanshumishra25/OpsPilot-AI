@@ -150,7 +150,6 @@ jobs:
       - uses: actions/checkout@v5
       - run: cp .env.example .env
       - name: Start stack and seed demo data
-        env: { OPSPILOT_RATE_LIMIT_LOGIN_PER_MINUTE: "200" }
         run: |
           docker compose up -d --build --wait --wait-timeout 600
           docker compose --profile demo run --rm seed

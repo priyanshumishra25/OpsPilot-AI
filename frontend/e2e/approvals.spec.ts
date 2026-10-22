@@ -1,10 +1,9 @@
 import { execFileSync } from "node:child_process";
 import { expect, request, test, type Page } from "@playwright/test";
+import { API, signInAs, token } from "./session";
 
 // Runs against the live Compose stack. Rollback requests/executions go through the real operations MCP server via the
 // independent MCP Inspector CLI (standing in for the agent, which needs a model API key).
-const PASSWORD = process.env.E2E_DEMO_PASSWORD ?? "opspilot-demo-password";
-const API = process.env.E2E_API_URL ?? "http://localhost:8000";
 const ROOT = new URL("../../", import.meta.url).pathname;
 
 test.describe.configure({ mode: "serial" });
@@ -27,18 +26,12 @@ function mcp(tool: string, args: Record<string, string>): Record<string, unknown
 
 async function adminApi(path: string) {
   const ctx = await request.newContext({ baseURL: API });
-  const login = await ctx.post("/api/v1/auth/login", { data: { email: "admin@opspilot.demo", password: PASSWORD } });
-  const { access_token } = (await login.json()) as { access_token: string };
-  await ctx.post(path, { headers: { Authorization: `Bearer ${access_token}` } });
+  await ctx.post(path, { headers: { Authorization: `Bearer ${token("admin@opspilot.demo")}` } });
   await ctx.dispose();
 }
 
 async function signIn(page: Page, email: string) {
-  await page.goto("/login");
-  await page.getByLabel("Email").fill(email);
-  await page.getByLabel("Password").fill(PASSWORD);
-  await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page.getByRole("heading", { name: "Overview" })).toBeVisible();
+  await signInAs(page, email);
 }
 
 const nav = (page: Page, name: string) => page.getByRole("navigation", { name: "Primary" }).getByRole("link", { name });

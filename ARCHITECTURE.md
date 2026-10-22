@@ -171,7 +171,15 @@ events (assistant text, tool calls/results, approvals, report, usage) --> agent_
   open. Thinking blocks are never recorded or shown.
 - **Recovery:** a worker restart fails in-flight turns explicitly; side effects are approval-gated anyway.
 
-## Planned (not implemented)
+## AWS deployment
 
-Linking agent CLI tool calls into the turn trace,
-Terraform for AWS (ECS Fargate, RDS, S3, SQS, Secrets Manager), and a deployment workflow with GitHub OIDC.
+Terraform in `infra/terraform` (written, validated and scanned; never applied). See DEPLOYMENT.md for topology,
+IAM, encryption and the deploy workflow.
+
+## Not implemented
+
+- Linking the agent CLI's MCP calls into the turn trace.
+- An agent-quality evaluation harness over the demo scenarios (EVALUATION.md describes the design).
+- Ingestion of GitHub repository documentation into the knowledge base.
+- Refresh tokens and server-side token revocation.
+- Automatic secret rotation.

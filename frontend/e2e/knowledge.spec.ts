@@ -1,15 +1,12 @@
 import { expect, request, test, type Page } from "@playwright/test";
+import { API, PASSWORD, signInAs, token } from "./session";
 
-const PASSWORD = process.env.E2E_DEMO_PASSWORD ?? "opspilot-demo-password";
 
-const API = process.env.E2E_API_URL ?? "http://localhost:8000";
 
 // Remove documents created by this suite (requires an admin; engineers cannot delete).
 test.afterAll(async () => {
   const ctx = await request.newContext({ baseURL: API });
-  const login = await ctx.post("/api/v1/auth/login", { data: { email: "admin@opspilot.demo", password: PASSWORD } });
-  const { access_token } = (await login.json()) as { access_token: string };
-  const headers = { Authorization: `Bearer ${access_token}` };
+  const headers = { Authorization: `Bearer ${token("admin@opspilot.demo")}` };
   const docs = (await (await ctx.get("/api/v1/documents", { headers })).json()) as { id: string; title: string }[];
   for (const d of docs.filter((x) => x.title.startsWith("Cache warmup runbook e2e-"))) {
     await ctx.delete(`/api/v1/documents/${d.id}`, { headers });
@@ -22,11 +19,7 @@ function nav(page: Page, name: string) {
 }
 
 async function signIn(page: Page, email: string) {
-  await page.goto("/login");
-  await page.getByLabel("Email").fill(email);
-  await page.getByLabel("Password").fill(PASSWORD);
-  await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page.getByRole("heading", { name: "Overview" })).toBeVisible();
+  await signInAs(page, email);
 }
 
 test("upload a document, watch it index, and retrieve it with evidence @responsive", async ({ page }) => {
@@ -74,6 +67,14 @@ test("viewer cannot upload or delete", async ({ page }) => {
   await expect(page.getByText("Indexed passages")).toBeVisible();
   await expect(page.getByRole("button", { name: "Delete" })).toHaveCount(0);
   await expect(nav(page, "Activity")).toHaveCount(0);
+});
+
+test("the login form signs a user in", async ({ page }) => {
+  await page.goto("/login");
+  await page.getByLabel("Email").fill("engineer@opspilot.demo");
+  await page.getByLabel("Password").fill(PASSWORD);
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await expect(page.getByRole("heading", { name: "Overview" })).toBeVisible();
 });
 
 test("invalid credentials show an error", async ({ page }) => {

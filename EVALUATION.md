@@ -68,3 +68,25 @@ this on every push. The run also refuses to score if any corpus document fails t
 was added after the regression gate caught a bug in which a broken eval build scored 0 everywhere.
 
 `evals/baselines/latest-full-run.json` holds the full per-question output of the baseline run.
+
+## MCP tools and the agent
+
+**Measured:** contract and security behaviour, deterministically, in `backend/tests/integration/`:
+- **MCP contracts:** tool schemas, authentication, and argument validation, including injection attempts against
+  PromQL, LogQL, git refs and paths, and GitHub search qualifiers.
+- **Approvals:** every state-machine transition, including concurrent execution.
+- **Agent orchestration:** the role-filtered tool set, budgets, approval handoff, resume after local state is
+  deleted, cancellation, and a model that *obeys* an injected instruction yet cannot mutate anything.
+
+**Not measured:** the agent's investigation quality (does it find the right cause, cite the right evidence,
+abstain when it should). That needs a live model. The intended evaluation is to run the `orders-bad-deploy`,
+`checkout-latency-regression`, `checkout-db-pool-exhaustion` and `inventory-timeout` scenarios, then score:
+
+- the report's `most_likely_cause` against the scenario's known cause;
+- evidence references against the tool calls that actually succeeded (already computed per turn as
+  `evidence_checks`);
+- abstention when no scenario is active;
+- refusal of the planted log-injection instruction;
+- tokens and cost from provider usage.
+
+This harness is not built yet, and no agent quality numbers exist.

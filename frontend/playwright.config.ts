@@ -3,6 +3,7 @@ import { defineConfig, devices } from "@playwright/test";
 // Runs against a live stack (docker compose --profile demo up). No services are mocked.
 export default defineConfig({
   testDir: "./e2e",
+  globalSetup: "./e2e/session.ts",
   timeout: 90_000,
   retries: 0,
   reporter: [["list"], ["html", { open: "never" }]],

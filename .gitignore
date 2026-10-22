@@ -24,3 +24,4 @@ crash.log
 evals/runs/*
 !evals/runs/.gitkeep
 .cache/
+frontend/e2e/.auth/
